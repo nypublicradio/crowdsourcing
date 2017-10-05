@@ -1,0 +1,9 @@
+.*sw*
+.*~
+
+# python cruft
+*.pyc
+__pycache__
+
+# db stuff
+*.sqlite3
