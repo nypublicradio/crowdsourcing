@@ -39,4 +39,4 @@ class SubmissionSerializer(serializers.ModelSerializer):
             question = questions.get(pk=answer['question'])
             answer['label'] = question['label']
             answer['input_type'] = question['input_type']
-        return validated_data
+        return super().create(validated_data)

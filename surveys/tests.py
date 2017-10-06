@@ -5,7 +5,7 @@ from mixer.backend.django import mixer
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from surveys.models import Survey, Question
+from surveys.models import Survey, Question, Submission
 
 
 class SubmissionTests(APITestCase):
@@ -36,6 +36,7 @@ class SubmissionTests(APITestCase):
         expected_keys = sorted(['question', 'label', 'input_type', 'response'])
         saved_answers = response.data['answers']
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.filter(survey=self.survey.pk).count(), 1)
         for answer in saved_answers:
             question = list(filter(lambda q: q.pk == answer['question'], self.questions))[0]
             self.assertEqual(expected_keys, sorted(answer.keys()))
