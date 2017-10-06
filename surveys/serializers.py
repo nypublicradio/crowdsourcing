@@ -9,6 +9,12 @@ class SurveySerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'summary', 'thank_you', 'starts_at', 'questions')
 
 
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ('id', 'survey', 'question_text', 'label', 'required')
+
+
 class SubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
