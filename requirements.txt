@@ -4,3 +4,4 @@ djangorestframework
 django-filter
 django-extensions
 django-admin-sortable2
+django-cors-headers
