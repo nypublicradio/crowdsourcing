@@ -9,6 +9,9 @@ class SurveyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SurveySerializer
 
 
-class SubmissionViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class SubmissionViewSet(viewsets.GenericViewSet,
+                        mixins.ListModelMixin,
+                        mixins.CreateModelMixin):
+
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
