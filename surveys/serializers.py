@@ -27,9 +27,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
         answered_questions = set([a['question'] for a in data['answers']])
         if not allowed_questions.issuperset(answered_questions):
             # only accept answers for the given survey
-            raise serializers.ValidationError(
-                'Submission includes answers to questions that do not belong to this survey.'
-            )
+            message = 'Submission includes answers to questions that do not belong to this survey.'
+            raise serializers.ValidationError({
+                'answers': message
+            })
         return data
 
     def create(self, validated_data):
