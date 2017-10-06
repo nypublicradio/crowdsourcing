@@ -1,7 +1,26 @@
+from adminsortable2.admin import SortableInlineAdminMixin
+
 from django.contrib import admin
 
-from .models import Survey, Submission
+from .models import Survey, Submission, Question
 
 
-admin.site.register(Survey)
+class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
+    model = Question
+    extra = 2
+    fields = ['input_type', 'label', 'short_name', 'question_text', 'required']
+    prepopulated_fields = {'short_name': ('label',)}
+
+
+class SurveyAdmin(admin.ModelAdmin):
+    list_display = ('title', 'starts_at', 'is_published')
+    fieldsets = [
+        (None, {'fields': ['title']}),
+        ('Date Information', {'fields': ['starts_at'], 'classes': ['collapse']}),
+        ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
+    ]
+    inlines = [QuestionInline]
+
+
+admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Submission)
