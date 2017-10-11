@@ -14,6 +14,9 @@ class Survey(models.Model):
 
     def is_published(self):
         return self.starts_at <= timezone.now()
+    is_published.admin_order_field = 'starts_at'
+    is_published.boolean = True
+    is_published.short_description = 'Is Published?'
 
 
 class Question(models.Model):

@@ -13,14 +13,18 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 class SurveyAdmin(admin.ModelAdmin):
-    list_display = ('title', 'starts_at', 'is_published')
     fieldsets = [
         (None, {'fields': ['title']}),
         ('Date Information', {'fields': ['starts_at'], 'classes': ['collapse']}),
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
+    list_display = ('title', 'starts_at', 'is_published')
+
+
+class SubmissionAdmin(admin.ModelAdmin):
+    list_filter = ['survey']
 
 
 admin.site.register(Survey, SurveyAdmin)
-admin.site.register(Submission)
+admin.site.register(Submission, SubmissionAdmin)
