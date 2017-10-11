@@ -3,8 +3,9 @@ version: '3'
 services:
   db:
     image: postgres
-  web:
+  django:
     build: .
+    image: nypr-crowdsourcing
     command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
