@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework_json_api import serializers
 
 from .models import Survey, Question, Submission
 from .validators import AnswerValidator
@@ -7,20 +7,29 @@ from .validators import AnswerValidator
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
+        resource_name = 'question'
         fields = ('id', 'survey', 'input_type', 'label', 'short_name', 'question_text', 'required')
 
 
 class SurveySerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True)
+    included_serializers = {
+        'questions': QuestionSerializer
+    }
 
     class Meta:
         model = Survey
+        resource_name = 'survey'
         fields = ('id', 'title', 'summary', 'thank_you', 'starts_at', 'questions')
+
+    class JSONAPIMeta:
+        included_resources = ['questions']
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
+        resource_name = 'submission'
         fields = ('id', 'survey', 'submitted_at', 'answers')
 
     def fill_in_answers(self, data):

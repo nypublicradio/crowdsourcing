@@ -1,3 +1,4 @@
+import json
 from unittest.mock import Mock, patch
 
 from django.urls import reverse
@@ -19,21 +20,48 @@ class SubmissionTests(APITestCase):
         url = reverse('submission-list')
         other_question = mixer.blend(Question, type=Question.TEXT)
         data = {
-            'survey': self.survey.pk,
-            'answers': [{
-                'question': other_question.pk,
-                'response': 'foo',
-            }]}
-        response = self.client.post(url, data, format='json')
+            'data': {
+                'type': 'submission',
+                'attributes': {
+                    'answers': [{
+                        'question': other_question.pk,
+                        'response': 'foo',
+                    }]
+                },
+                'relationships': {
+                    'survey': {
+                        'data': {
+                            'type': 'survey',
+                            'id': self.survey.pk
+                        }
+                    }
+                }
+            }
+        }
+        response = self.client.post(url, data=json.dumps(data),
+                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_created_submissions(self):
         url = reverse('submission-list')
         data = {
-            'survey': self.survey.pk,
-            'answers': [{'question': q.pk, 'response': 'foo'} for q in self.questions]
+            'data': {
+                'type': 'submission',
+                'attributes': {
+                    'answers': [{'question': q.pk, 'response': 'foo'} for q in self.questions]
+                },
+                'relationships': {
+                    'survey': {
+                        'data': {
+                            'type': 'survey',
+                            'id': self.survey.pk
+                        }
+                    }
+                }
+            }
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data=json.dumps(data),
+                                    content_type='application/vnd.api+json')
 
         expected_keys = sorted(['question', 'label', 'input_type', 'response'])
         saved_answers = response.data['answers']
@@ -56,20 +84,36 @@ class SubmissionTests(APITestCase):
         bad_email = 'bademail@'
         bad_audio = 'http://not-a-file.mp3'
         data = {
-            'survey': survey.pk,
-            'answers': [{
-                'question': email_question.pk,
-                'response': bad_email,
-            }, {
-                'question': audio_question.pk,
-                'response': bad_audio
-            }]
+            'data': {
+                'type': 'submission',
+                'attributes': {
+                    'answers': [{
+                        'question': email_question.pk,
+                        'response': bad_email,
+                    }, {
+                        'question': audio_question.pk,
+                        'response': bad_audio
+                    }]
+                },
+                'relationships': {
+                    'survey': {
+                        'data': {
+                            'type': 'survey',
+                            'id': survey.pk
+                        }
+                    }
+                }
+            }
         }
         mock_head.return_value = Mock(status_code=404)
         response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data=json.dumps(data),
+                                    content_type='application/vnd.api+json')
         errors = response.data
+        audio_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/audio'][0]
+        email_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/email'][0]
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         mock_head.assert_called_with(bad_audio)
-        self.assertEqual(errors['audio'], ['Audio file {} does not exist.'.format(bad_audio)])
-        self.assertEqual(errors['email'], ['Enter a valid email address.'])
+        self.assertEqual(audio_error['detail'], 'Audio file {} does not exist.'.format(bad_audio))
+        self.assertEqual(email_error['detail'], 'Enter a valid email address.')
