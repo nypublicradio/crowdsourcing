@@ -24,4 +24,4 @@ Use the `--service-ports` argument to enable breakpoints
 import ipdb; ipdb.set_trace()
 ```
 
-`$ docker-compose up --service-ports`
+`$ docker-compose run --service-ports --rm django`
