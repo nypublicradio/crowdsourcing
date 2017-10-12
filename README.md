@@ -25,3 +25,6 @@ import ipdb; ipdb.set_trace()
 ```
 
 `$ docker-compose run --service-ports --rm django`
+
+### test
+`$ docker-compose run --rm django ./manage.py test`
