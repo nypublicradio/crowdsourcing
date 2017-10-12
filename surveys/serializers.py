@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Survey, Question, Submission
+from .validators import AnswerValidator
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -22,22 +23,16 @@ class SubmissionSerializer(serializers.ModelSerializer):
         model = Submission
         fields = ('id', 'survey', 'submitted_at', 'answers')
 
-    def validate(self, data):
-        allowed_questions = set([q.pk for q in data['survey'].questions.all()])
-        answered_questions = set([a['question'] for a in data['answers']])
-        if not allowed_questions.issuperset(answered_questions):
-            # only accept answers for the given survey
-            message = 'Submission includes answers to questions that do not belong to this survey.'
-            raise serializers.ValidationError({
-                'answers': message
-            })
-        return data
-
-    def create(self, validated_data):
-        questions = validated_data['survey'].questions.values()
-        # add metadata from the question to answers in the JSON blob
-        for answer in validated_data['answers']:
+    def fill_in_answers(self, data):
+        questions = data['survey'].questions.values()
+        for answer in data['answers']:
             question = questions.get(pk=answer['question'])
             answer['label'] = question['label']
             answer['input_type'] = question['input_type']
-        return super().create(validated_data)
+        return data
+
+    def validate(self, data):
+        data = self.fill_in_answers(data)
+        data = AnswerValidator.answers_belong_to_survey(data)
+        data = AnswerValidator.validate_answer_type(data)
+        return data
