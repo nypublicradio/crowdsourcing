@@ -26,7 +26,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def fill_in_answers(self, data):
         questions = data['survey'].questions.values()
         for answer in data['answers']:
-            question = questions.get(pk=answer['question'])
+            try:
+                question = questions.get(pk=answer['question'])
+            except Question.DoesNotExist:
+                raise serializers.ValidationError({
+                    'question': 'The specified question does not exist.'
+                })
             answer['label'] = question['label']
             answer['input_type'] = question['input_type']
         return data
