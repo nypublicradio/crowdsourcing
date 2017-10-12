@@ -1,5 +1,7 @@
 import requests
 
+import django.core.exceptions
+
 from django.core.validators import validate_email
 from rest_framework.serializers import ValidationError
 
@@ -10,9 +12,9 @@ def remote_file_lookup(url):
     try:
         r = requests.head(url)
     except requests.exceptions.RequestException as e:
-        raise ValidationError('Url failure: {}'.format(e))
+        raise django.core.exceptions.ValidationError('Url failure: {}.'.format(e))
     if r.status_code != requests.codes.ok:
-        raise ValidationError('Url {} file does not exist'.format(url))
+        raise django.core.exceptions.ValidationError('Audio file {} does not exist.'.format(url))
 
 
 class AnswerValidator:
@@ -35,8 +37,16 @@ class AnswerValidator:
 
     @classmethod
     def validate_answer_type(cls, data):
+        error_dict = {}
         for answer in data['answers']:
+            error_dict[answer['label']] = []
             validators = cls.VALIDATORS.get(answer['input_type'], [])
             for validator in validators:
-                validator(answer['response'])
+                try:
+                    validator(answer['response'])
+                except django.core.exceptions.ValidationError as e:
+                    error_dict[answer['label']].append(e.message)
+        errors = {k: v for k, v in error_dict.items() if v}
+        if errors:
+            raise ValidationError(errors)
         return data
