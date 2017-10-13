@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+manage.py migrate
+
+uwsgi --honour-stdin \
+      --py-auto-reload 3 \
+      --http :8000 \
+      --log-x-forwarded-for \
+      --logformat '%(addr) - %(user) [%(ltime)] "%(method) %(uri) %(proto)" %(status) %(size) "%(referrer)" "%(uagent)"' \
+      --manage-script-name \
+      --env DJANGO_SETTINGS_MODULE=crowdsourcing.settings \
+      --env DJANGO_DEBUG=True \
+      --mount /=crowdsourcing.wsgi:application
