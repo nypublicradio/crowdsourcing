@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import posixpath
+from distutils.util import strtobool
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +22,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3z$phzh%49=qh6djps^anmmlpb#j)n)$yytpfiw445_)046(+2'
+try:
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+except KeyError:
+    from django.core.management.utils import get_random_secret_key
+    SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+try:
+    DEBUG = strtobool(os.environ.get('DJANGO_DEBUG', 'False'))
+except ValueError:
+    DEBUG = False
 
-ALLOWED_HOSTS = []
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/
+# These files do not follow Django's FORCE_SCRIPT_NAME directive.
+DJANGO_URL_PREFIX = os.environ.get('DJANGO_URL_PREFIX')
+STATIC_URL = posixpath.join(DJANGO_URL_PREFIX or '/', 'static/')
+
+# Static files can be stored via S3 in demo/production.
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_QUERYSTRING_AUTH = False
+AWS_LOCATION = DJANGO_URL_PREFIX
+AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN')
+if AWS_STORAGE_BUCKET_NAME:
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,7 +61,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'raven.contrib.django.raven_compat',
     'rest_framework',
+    'storages',
     'django_extensions',
     'adminsortable2',
     'corsheaders',
@@ -82,10 +107,11 @@ WSGI_APPLICATION = 'crowdsourcing.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+        'NAME': os.environ.get('DB_NAME', 'postgres'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', 'db'),
+        'PORT': int(os.environ.get('DB_PORT', 5432)),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
     }
 }
 
@@ -123,10 +149,10 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-STATIC_URL = '/static/'
+# Sentry
+RAVEN_CONFIG = {
+    'dsn': os.environ.get('SENTRY_DSN')
+}
 
 CORS_ORIGIN_ALLOW_ALL = True
 

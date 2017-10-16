@@ -2,6 +2,9 @@
 .*~
 
 # python cruft
+.coverage
+.eggs
+*.egg-info
 *.pyc
 __pycache__
 
