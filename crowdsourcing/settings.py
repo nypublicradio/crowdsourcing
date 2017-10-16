@@ -25,9 +25,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 try:
     SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 except KeyError:
-    from django.utils.crypto import get_random_string
-    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-    SECRET_KEY = get_random_string(50, chars)
+    from django.core.management.utils import get_random_secret_key
+    SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 try:
