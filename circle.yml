@@ -49,9 +49,9 @@ jobs:
               python3 setup.py deploy --environment=demo \
                                      --tag=demo \
                                      --ecs-cluster=microservices \
-            elif echo "$CIRCLE_TAG" | grep -qP "v\d+\.\d+\.\d+"; then
                                      --ecr-repository=crowdsourcing \
                                      --wait=300
+            elif echo "$CIRCLE_TAG" | grep -q "v[0-9]\+\.[0-9]\+\.[0-9]\+"; then
               python3 setup.py deploy --environment=prod \
                                      --tag="$CIRCLE_TAG" \
                                      --ecs-cluster=microservices \
