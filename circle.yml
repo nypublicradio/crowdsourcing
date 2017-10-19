@@ -37,7 +37,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - restore_cache:
-          key: deploy-{{ checksum "setup.py" }}-{{ checksum "Dockerfile" }}
+          key: deploy-{{ checksum "setup.py" }}
       - run:
           name: Install Requirements
           command: |
@@ -56,6 +56,11 @@ jobs:
                                      --ecs-cluster=microservices \
                                      --ecr-repository=crowdsourcing
              fi
+      - save_cache:
+          key: deploy-{{ checksum "setup.py" }}
+          pathes:
+            - ~/crowdsourcing/.eggs
+            - ~/.cache
 
   deploy_static:
     working_directory: /code
