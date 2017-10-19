@@ -60,7 +60,7 @@ jobs:
              fi
       - save_cache:
           key: deploy-{{ checksum "setup.py" }}
-          pathes:
+          paths:
             - ~/crowdsourcing/.eggs
             - ~/.cache
 
