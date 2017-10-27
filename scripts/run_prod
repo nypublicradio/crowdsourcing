@@ -13,4 +13,5 @@ uwsgi --http :8080 \
       --env DJANGO_SETTINGS_MODULE=crowdsourcing.settings \
       --env DJANGO_DEBUG=False \
       --env DJANGO_URL_PREFIX=/crowdsourcing \
-      --mount /crowdsourcing=crowdsourcing.wsgi:application
+      --mount /crowdsourcing=crowdsourcing.wsgi:application \
+      --enable-threads
