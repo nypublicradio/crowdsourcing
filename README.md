@@ -8,10 +8,10 @@
 _Use this to rebuild the image if requirements or the Dockerfile change_
 
 ### run the migrations
-`$ docker-compose run django manage.py migrate`
+`$ docker-compose run django ./manage.py migrate`
 
 ### make yourself a superuser
-`$ docker-compose run django manage.py createsuperuser`
+`$ docker-compose run django ./manage.py createsuperuser`
 
 ### run
 `$ docker-compose up`
