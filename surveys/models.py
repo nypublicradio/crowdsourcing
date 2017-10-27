@@ -38,7 +38,7 @@ class Question(models.Model):
                                   default=TEXT)
     label = models.CharField('User-friendly Label', max_length=100)
     short_name = models.SlugField(max_length=100)
-    question_text = models.TextField(blank=True, max_length=100)
+    question_text = models.TextField(blank=True, max_length=1000)
     required = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
