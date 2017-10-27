@@ -46,6 +46,10 @@ class AnswerValidator:
                     validator(answer['response'])
                 except django.core.exceptions.ValidationError as e:
                     error_dict[answer['label']].append(e.message)
+                except KeyError:
+                    error_dict[answer['label']].append(
+                        '{} does not have a response'.format(answer['label'])
+                    )
         errors = {k: v for k, v in error_dict.items() if v}
         if errors:
             raise ValidationError(errors)
