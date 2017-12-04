@@ -55,7 +55,7 @@ class Submission(models.Model):
     answers = JSONField()
 
     def __str__(self):
-        return "{0.title} submission on {1}".format(self.survey, self.submitted_at)
+        return "{0.title} submission".format(self.survey)
 
     @property
     def audio_questions(self):
