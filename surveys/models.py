@@ -56,3 +56,19 @@ class Submission(models.Model):
 
     def __str__(self):
         return "{0.title} submission on {1}".format(self.survey, self.submitted_at)
+
+    @property
+    def audio_questions(self):
+        survey_audio_questions = self.survey.questions.filter(input_type=Question.AUDIO)
+        return survey_audio_questions if survey_audio_questions.exists() else None
+
+    @property
+    def audio_answers(self):
+        audio_questions = self.audio_questions
+        if not audio_questions:
+            return None
+        else:
+            return [
+                answer['response'] for answer in self.answers
+                if answer['question'] in audio_questions.values_list('id', flat=True)
+            ]
