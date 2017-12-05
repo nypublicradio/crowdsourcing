@@ -65,6 +65,48 @@ container, but if incorrect it can be obtained via `docker-compose ps`.
 $ docker attach crowdsourcing_django_1
 ```
 
+### Alternate workflow
+
+For developers who prefer to run the Django server directly on their local system
+an alternate workflow is available.
+
+Create and activate a virtual environment.
+```sh
+$ virtualenv ~/.virtualenvs/crowdsourcing
+$ . ~/.virtualenvs/crowdsourcing/bin/activate
+```
+
+Install the package dependencies and (optionally) the test dependencies.
+```sh
+$ pip install -e .
+$ python setup.py test_requirements
+```
+
+Start a Postgres container in the background.
+This will expose Postgres on localhost port 5432.
+Exclude the `-v ...` argument to avoid persisting data over multiple container runs.
+```sh
+$ docker run -v /tmp/postgres:/var/lib/postgresql/data -dp 5432:5432 postgres
+```
+
+Set environment variables to target postgres container.
+The four commands below and any other development config
+can be added to the virtual environment's `bin/activate`
+script to automate this moving forward.
+```sh
+$ export DB_HOST=localhost
+$ export DB_NAME=postgres
+$ export DB_USER=postgres
+$ export DB_PASSWORD=
+```
+
+Execute the Django initialization commands.
+```sh
+$ ./manage.py migrate
+$ ./manage.py createsuperuser
+$ ./manage.py runserver 0.0.0.0:8080
+```
+
 ## Configuration
 
 Configuration should be set via environment variables.
