@@ -2,11 +2,14 @@
 .*~
 
 # python cruft
+.cache
 .coverage
 .eggs
 *.egg-info
 *.pyc
 __pycache__
+build/
+dist/
 
 # db stuff
 *.sqlite3

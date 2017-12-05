@@ -5,14 +5,18 @@ services:
     image: postgres
   django:
     build: .
-    image: nypr-crowdsourcing
     command: python3 manage.py runserver 0.0.0.0:8080
+    depends_on:
+      - db
     environment:
       DJANGO_DEBUG: "true"
       DJANGO_SECRET_KEY: dev
-    volumes:
-      - .:/code
+    image: nypr-crowdsourcing
+    links:
+      - db
     ports:
       - "8080:8080"
-    depends_on:
-      - db
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/code

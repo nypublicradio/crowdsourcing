@@ -2,89 +2,75 @@ version: 2
 jobs:
 
   test:
-    working_directory: /code
+    working_directory: ~/crowdsourcing
     docker:
-      - image: python:3.6
+      - image: circleci/python:3.6
       - image: postgres
         name: db
     steps:
       - checkout
       - restore_cache:
-          key: deps-{{ checksum "setup.py" }}
+          key: d-{{ checksum "setup.py" }}
       - run:
           name: Install Requirements
           command: |
-            if [[ ! -d /code/.venv ]]; then
-              python -m venv /code/.venv
-              . /code/.venv/bin/activate
-              python setup.py develop
+            if [[ ! -d ~/.venv ]]; then
+              python -m venv ~/.venv
+              . ~/.venv/bin/activate
+              pip install -e .
+              python setup.py test_requirements
             fi
       - run:
           name: Test
           command: |
-            . /code/.venv/bin/activate
+            . ~/.venv/bin/activate
             python setup.py test
       - save_cache:
-          key: deps-{{ checksum "setup.py" }}
+          key: d-{{ checksum "setup.py" }}
           paths:
-            - /code/.venv
-            - /code/.eggs
+            - ~/.venv
+            - ~/.eggs
+            - ~/crowdsourcing/crowdsourcing.egg-info
   deploy:
     working_directory: ~/crowdsourcing
     docker:
-      - image: docker:17.07.0-ce-git
+      - image: circleci/python:3.6
     steps:
       - checkout
       - setup_remote_docker
       - restore_cache:
-          key: deploy-{{ checksum "setup.py" }}
-      - run:
-          name: Install Requirements
-          command: |
-            apk add --no-cache python3
+          key: d-{{ checksum "setup.py" }}
       - run:
           name: Deploy
           command: |
+            . ~/.venv/bin/activate
             if [[ "${CIRCLE_BRANCH}" == "demo" ]]; then
-              python3 setup.py deploy --environment=demo \
+              python setup.py deploy --environment=demo \
                                      --tag=demo \
                                      --ecs-cluster=microservices \
                                      --ecr-repository=crowdsourcing \
                                      --wait=300
             elif echo "$CIRCLE_TAG" | grep -q "v[0-9]\+\.[0-9]\+\.[0-9]\+"; then
-              python3 setup.py deploy --environment=prod \
+              python setup.py deploy --environment=prod \
                                      --tag="$CIRCLE_TAG" \
                                      --ecs-cluster=microservices \
                                      --ecr-repository=crowdsourcing \
                                      --wait=300
              fi
-      - save_cache:
-          key: deploy-{{ checksum "setup.py" }}
-          paths:
-            - ~/crowdsourcing/.eggs
-            - ~/.cache
 
   deploy_static:
-    working_directory: /code
+    working_directory: ~/crowdsourcing
     docker:
-      - image: python:3.6
+      - image: circleci/python:3.6
     steps:
       - checkout
       - restore_cache:
-          key: deps-{{ checksum "setup.py" }}
-      - run:
-          name: Install Requirements
-          command: |
-            if [[ ! -d /code/.venv ]]; then
-              python -m venv /code/.venv
-              . /code/.venv/bin/activate
-              python setup.py requirements
-            fi
+          key: d-{{ checksum "setup.py" }}
       - run:
           name: Deploy Static
           command: |
-            . /code/.venv/bin/activate
-            python setup.py develop
+            . ~/.venv/bin/activate
+            pip install -e .
             set -o allexport
             if [[ "${CIRCLE_BRANCH}" == "demo" ]]; then
               env | grep ^DEMO_ | sed 's/DEMO_//g' > .env && source .env

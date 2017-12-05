@@ -2,13 +2,6 @@
 NYPR Crowdsourcing
 """
 from setuptools import setup
-try:
-    import nyprsetuptools
-except ImportError:
-    import pip
-    pip.main(['install', '-U', 'git+https://github.com/nypublicradio/nyprsetuptools.git'])
-    import nyprsetuptools
-
 
 setup(
     name='crowdsourcing',
@@ -46,6 +39,12 @@ setup(
         'uwsgi',
     ],
     tests_require=[
+        'pytest>=3.0.6',
+        'pytest-cov',
+        'pytest-django',
+        'pytest-env',
+        'pytest-flake8',
+        'pytest-sugar',
         'coverage',
         'ipdb',
         'mixer',
@@ -55,9 +54,24 @@ setup(
         "scripts/run_prod",
         "manage.py"
     ],
-    cmdclass={
-        'deploy': nyprsetuptools.DockerDeploy,
-        'requirements': nyprsetuptools.InstallRequirements,
-        'test': nyprsetuptools.DjangoTest,
-    }
+    setup_requires=[
+        'nyprsetuptools>=0.0.0'
+    ],
+    dependency_links=[
+        'https://github.com/nypublicradio/nyprsetuptools/tarball/master#egg=nyprsetuptools-0.0.0'
+    ],
+    entry_points={
+        'distutils.commands': [
+            'requirements = nyprsetuptools:InstallRequirements',
+            'test = nyprsetuptools:PyTest',
+            'test_requirements = nyprsetuptools:InstallTestRequirements',
+            'deploy = nyprsetuptools:DockerDeploy',
+        ],
+        'distutils.setup_keywords': [
+            'requirements = nyprsetuptools:setup_keywords',
+            'test = nyprsetuptools:setup_keywords',
+            'test_requirements = nyprsetuptools:setup_keywords',
+            'deploy = nyprsetuptools:setup_keywords',
+        ],
+    },
 )
