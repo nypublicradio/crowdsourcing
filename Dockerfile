@@ -4,10 +4,7 @@ ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
 WORKDIR /code
-
-COPY setup.py ./
-RUN python setup.py requirements
-
 COPY . ./
-RUN python setup.py develop
+RUN pip install -e .
+
 CMD run_prod

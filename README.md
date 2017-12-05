@@ -1,70 +1,85 @@
-# crowdsourcing microservice
+# NYPR Crowdsourcing
 
-## development
+## Development
 
-### build the image
-`$ docker-compose build`
+### Getting started
 
-_Use this to rebuild the image if requirements or the Dockerfile change_
-
-### run the migrations
-`$ docker-compose run django ./manage.py migrate`
-
-### make yourself a superuser
-`$ docker-compose run django ./manage.py createsuperuser`
-
-### run
-`$ docker-compose up`
-
-### debug
-Use the `--service-ports` argument to enable breakpoints
-
-```python3
-# some code
-import ipdb; ipdb.set_trace()
+Clone the repo.
+```sh
+$ git clone git@github.com:nypublicradio/crowdsourcing
+$ cd crowdsourcing
 ```
 
-`$ docker-compose run --service-ports --rm django`
-
-### test
-`$ docker-compose run --rm django manage.py test`
-
-## production
-
-### settings to expose via environment variables
-
-#### aws keys
-```
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_DEFAULT_REGION
+Build the image.
+```sh
+$ docker-compose build
 ```
 
-#### aws s3 bucket and cloudfront domain (without path) for static files
-```
-AWS_STORAGE_BUCKET_NAME
-AWS_S3_CUSTOM_DOMAIN
-```
-
-#### postgres connection information
-```
-DB_HOST
-DB_NAME
-DB_PASSWORD
-DB_USER
+Run the development server.
+```sh
+$ docker-compose up
 ```
 
-#### url route to microservice (ie. /crowdsourcing)
-```
-DJANGO_URL_PREFIX
-```
-
-#### securely generated secret key
-```
-DJANGO_SECRET_KEY
+Run the migrations.
+```sh
+$ docker-compose exec django manage.py migrate
 ```
 
-#### sentry project
+Create a superuser.
+```sh
+$ docker-compose exec django manage.py createsuperuser
 ```
-SENTRY_DSN
+
+### Running tests
+
+Tests are executed via pytest using NYPR's setuptools extensions.
+Use `exec` to run tests on running development containers and `run` to run tests within a new container.
+```sh
+$ docker-compose exec python setup.py test
 ```
+
+For faster testing in development, test dependencies can be permanently
+installed.
+```sh
+$ docker-compose exec python setup.py test_requirements
+```
+
+### Interactive debugging
+
+To enable `ipdb` breakpoints developers need to attach to the Docker container
+running the Django development server.
+
+Start the containers and detach from the log output.
+```sh
+$ docker-compose up -d
+```
+
+If using `ipdb` for debugging it will need to be installed in the development container.
+```sh
+$ docker-compose exec django pip install ipdb
+```
+
+Attach to the container. The example below provides the likely name for the Django
+container, but if incorrect it can be obtained via `docker-compose ps`.
+```sh
+$ docker attach crowdsourcing_django_1
+```
+
+## Configuration
+
+Configuration should be set via environment variables.
+
+| **Config Value**          | **Description**                                 |
+| ------------------------- | ----------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`       | _Set via boto3 config or environment variable._ |
+| `AWS_DEFAULT_REGION`      | _Set via boto3 config or environment variable._ |
+| `AWS_SECRET_ACCESS_KEY`   | _Set via boto3 config or environment variable._ |
+| `AWS_S3_CUSTOM_DOMAIN`    | Cloudfront domain alias for static files.       |
+| `AWS_STORAGE_BUCKET_NAME` | S3 bucket for Django's storage backend.         |
+| `DB_HOST`                 | IP or hostname of the database.                 |
+| `DB_NAME`                 | Database name (for app, not tests).             |
+| `DB_PASSWORD`             | Database password (for app, not tests).         |
+| `DB_USER`                 | Database user (for app, not tests).             |
+| `DJANGO_URL_PREFIX`       | URL route to service (/crowdsourcing in prod).  |
+| `DJANGO_SECRET_KEY`       | Securely generated key for internal Django use. |
+| `SENTRY_DSN`              | URL for reporting uncaught exceptions.          |

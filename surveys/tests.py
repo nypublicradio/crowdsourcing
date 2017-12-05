@@ -1,6 +1,7 @@
 import json
 from unittest.mock import Mock, patch
 
+import pytest
 from django.urls import reverse
 
 from mixer.backend.django import mixer
@@ -9,6 +10,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from surveys.models import Survey, Question, Submission
+
+
+pytestmark = pytest.mark.django_db
 
 
 class SubmissionTests(APITestCase):
