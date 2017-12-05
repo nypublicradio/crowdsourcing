@@ -58,17 +58,5 @@ class Submission(models.Model):
         return "{0.title} submission".format(self.survey)
 
     @property
-    def audio_questions(self):
-        survey_audio_questions = self.survey.questions.filter(input_type=Question.AUDIO)
-        return survey_audio_questions if survey_audio_questions.exists() else None
-
-    @property
     def audio_answers(self):
-        audio_questions = self.audio_questions
-        if not audio_questions:
-            return None
-        else:
-            return [
-                answer['response'] for answer in self.answers
-                if answer['question'] in audio_questions.values_list('id', flat=True)
-            ]
+        return [x for x in filter(lambda x: x['input_type'] == 'a', self.answers)]
