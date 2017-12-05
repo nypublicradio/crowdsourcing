@@ -19,4 +19,10 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - .:/code
+      - ./crowdsourcing:/code/crowdsourcing
+      - ./scripts:/code/scripts
+      - ./surveys:/code/surveys
+      - ./templates:/code/templates 
+      - ./manage.py:/code/manage.py
+      - ./setup.py:/code/setup.py
+      - ./pytest.ini:/code/pytest.ini
