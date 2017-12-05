@@ -29,10 +29,12 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'submitted_at', 'audio_files', 'survey_link')
 
     def audio_files(self, obj):
+        # `format_html_join` requires string values to be wrapped in an iterable
+        audio_urls = [[answer['response']] for answer in obj.audio_answers]
         return format_html_join(
             '\n',
             '<audio src="{}" controls />',
-            ([file] for file in obj.audio_answers)) if obj.audio_answers else None
+            audio_urls)
     audio_files.short_description = 'Audio Answers'
 
     def survey_link(self, obj):
