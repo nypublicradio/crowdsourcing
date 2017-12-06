@@ -7,6 +7,23 @@ from django.core.urlresolvers import reverse
 from .models import Survey, Submission, Question
 
 
+class HasAudioFilter(admin.SimpleListFilter):
+    title = 'has audio response'
+    parameter_name = 'has_audio'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('1', 'Yes'),
+            ('0', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.filter(answers__contains=[{'input_type': Question.AUDIO}])
+        if self.value() == '0':
+            return queryset.exclude(answers__contains=[{'input_type': Question.AUDIO}])
+
+
 class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
     model = Question
     extra = 2
@@ -25,7 +42,7 @@ class SurveyAdmin(admin.ModelAdmin):
 
 
 class SubmissionAdmin(admin.ModelAdmin):
-    list_filter = ['survey']
+    list_filter = ['survey', HasAudioFilter]
     list_display = ('__str__', 'submitted_at', 'audio_files', 'survey_link')
 
     def audio_files(self, obj):
