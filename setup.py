@@ -25,7 +25,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'boto3',
-        'Django>=1.8,<2.0',
+        'Django>=2.0,<2.1',
         'django-admin-sortable2',
         'django-cors-headers',
         'django-extensions',

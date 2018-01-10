@@ -31,7 +31,7 @@ class Question(models.Model):
         (AUDIO, 'Audio'),
     )
 
-    survey = models.ForeignKey(Survey, related_name='questions')
+    survey = models.ForeignKey(Survey, related_name='questions', on_delete=models.CASCADE)
     input_type = models.CharField('Question Type',
                                   max_length=1,
                                   choices=TYPE_CHOICES,
@@ -50,7 +50,7 @@ class Question(models.Model):
 
 
 class Submission(models.Model):
-    survey = models.ForeignKey(Survey)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(default=timezone.now)
     answers = JSONField()
 

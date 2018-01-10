@@ -2,7 +2,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 
 from django.contrib import admin
 from django.utils.html import format_html_join, format_html
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .models import Survey, Submission, Question
 
