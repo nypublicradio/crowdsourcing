@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from surveys.models import Survey, Question, Submission
+from surveys.validators import MISSING_QUESTION
 
 
 pytestmark = pytest.mark.django_db
@@ -33,6 +34,7 @@ class SubmissionTests(APITestCase):
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['question'][0], MISSING_QUESTION)
 
     def test_created_submissions(self):
         url = reverse('submission-list')
