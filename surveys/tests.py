@@ -31,7 +31,7 @@ class SubmissionTests(APITestCase):
             'survey': self.survey.pk
         }
         response = self.client.post(url, data=json.dumps(data),
-                                    content_type='application/vnd.api+json')
+                                    content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_created_submissions(self):
@@ -41,7 +41,7 @@ class SubmissionTests(APITestCase):
             'survey': self.survey.pk
         }
         response = self.client.post(url, data=json.dumps(data),
-                                    content_type='application/vnd.api+json')
+                                    content_type='application/json')
 
         expected_keys = sorted(['question', 'label', 'input_type', 'response'])
         saved_answers = response.data['answers']
@@ -76,7 +76,7 @@ class SubmissionTests(APITestCase):
         mock_head.return_value = Mock(status_code=404)
         response = self.client.post(url, data, format='json')
         response = self.client.post(url, data=json.dumps(data),
-                                    content_type='application/vnd.api+json')
+                                    content_type='application/json')
         errors = response.data
         audio_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/audio'][0]
         email_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/email'][0]
