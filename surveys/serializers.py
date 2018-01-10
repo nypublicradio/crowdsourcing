@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Survey, Question, Submission
-from .validators import AnswerValidator
+from . import validators
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
                 question = questions.get(pk=answer['question'])
             except Question.DoesNotExist:
                 raise serializers.ValidationError({
-                    'question': 'The specified question does not exist.'
+                    'question': validators.MISSING_QUESTION
                 })
             answer['label'] = question['label']
             answer['input_type'] = question['input_type']
@@ -41,6 +41,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data = self.fill_in_answers(data)
-        data = AnswerValidator.answers_belong_to_survey(data)
-        data = AnswerValidator.validate_answer_type(data)
+        data = validators.AnswerValidator.answers_belong_to_survey(data)
+        data = validators.AnswerValidator.validate_answer_type(data)
         return data

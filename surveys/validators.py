@@ -7,6 +7,8 @@ from rest_framework.serializers import ValidationError
 
 from .models import Question
 
+MISSING_QUESTION = 'The specified question does not exist.'
+
 
 def remote_file_lookup(url):
     try:
