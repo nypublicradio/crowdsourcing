@@ -35,13 +35,13 @@ $ docker-compose exec django manage.py createsuperuser
 Tests are executed via pytest using NYPR's setuptools extensions.
 Use `exec` to run tests on running development containers and `run` to run tests within a new container.
 ```sh
-$ docker-compose exec python setup.py test
+$ docker-compose exec django python setup.py test
 ```
 
 For faster testing in development, test dependencies can be permanently
 installed.
 ```sh
-$ docker-compose exec python setup.py test_requirements
+$ docker-compose exec django python setup.py test_requirements
 ```
 
 ### Interactive debugging
