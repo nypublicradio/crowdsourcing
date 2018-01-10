@@ -32,7 +32,6 @@ setup(
         'django-filter',
         'django-storages',
         'djangorestframework>=3.7.0',
-        'djangorestframework-jsonapi',
         'psycopg2',
         'raven',
         'requests',
