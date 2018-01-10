@@ -24,23 +24,11 @@ class SubmissionTests(APITestCase):
         url = reverse('submission-list')
         other_question = mixer.blend(Question, type=Question.TEXT)
         data = {
-            'data': {
-                'type': 'submission',
-                'attributes': {
-                    'answers': [{
-                        'question': other_question.pk,
-                        'response': 'foo',
-                    }]
-                },
-                'relationships': {
-                    'survey': {
-                        'data': {
-                            'type': 'survey',
-                            'id': self.survey.pk
-                        }
-                    }
-                }
-            }
+            'answers': [{
+                'question': other_question.pk,
+                'response': 'foo',
+            }],
+            'survey': self.survey.pk
         }
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/vnd.api+json')
@@ -49,20 +37,8 @@ class SubmissionTests(APITestCase):
     def test_created_submissions(self):
         url = reverse('submission-list')
         data = {
-            'data': {
-                'type': 'submission',
-                'attributes': {
-                    'answers': [{'question': q.pk, 'response': 'foo'} for q in self.questions]
-                },
-                'relationships': {
-                    'survey': {
-                        'data': {
-                            'type': 'survey',
-                            'id': self.survey.pk
-                        }
-                    }
-                }
-            }
+            'answers': [{'question': q.pk, 'response': 'foo'} for q in self.questions],
+            'survey': self.survey.pk
         }
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/vnd.api+json')
@@ -88,26 +64,14 @@ class SubmissionTests(APITestCase):
         bad_email = 'bademail@'
         bad_audio = 'http://not-a-file.mp3'
         data = {
-            'data': {
-                'type': 'submission',
-                'attributes': {
-                    'answers': [{
-                        'question': email_question.pk,
-                        'response': bad_email,
-                    }, {
-                        'question': audio_question.pk,
-                        'response': bad_audio
-                    }]
-                },
-                'relationships': {
-                    'survey': {
-                        'data': {
-                            'type': 'survey',
-                            'id': survey.pk
-                        }
-                    }
-                }
-            }
+            'answers': [{
+                'question': email_question.pk,
+                'response': bad_email,
+            }, {
+                'question': audio_question.pk,
+                'response': bad_audio
+            }],
+            'survey': survey.pk
         }
         mock_head.return_value = Mock(status_code=404)
         response = self.client.post(url, data, format='json')
