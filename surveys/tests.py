@@ -78,10 +78,10 @@ class SubmissionTests(APITestCase):
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/json')
         errors = response.data
-        audio_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/audio'][0]
-        email_error = [e for e in errors if e['source']['pointer'] == '/data/attributes/email'][0]
+        audio_error = errors['audio'][0]
+        email_error = errors['email'][0]
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         mock_head.assert_called_with(bad_audio)
-        self.assertEqual(audio_error['detail'], 'Audio file {} does not exist.'.format(bad_audio))
-        self.assertEqual(email_error['detail'], 'Enter a valid email address.')
+        self.assertEqual(audio_error, 'Audio file {} does not exist.'.format(bad_audio))
+        self.assertEqual(email_error, 'Enter a valid email address.')
