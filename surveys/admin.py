@@ -36,6 +36,8 @@ class SurveyAdmin(admin.ModelAdmin):
         (None, {'fields': ['title']}),
         ('Date Information', {'fields': ['starts_at'], 'classes': ['collapse']}),
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
+        ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')],
+                      'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
     list_display = ('title', 'starts_at', 'is_published', 'view_submissions')
