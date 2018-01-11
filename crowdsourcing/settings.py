@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
+import sys
 import os
 import posixpath
 from distutils.util import strtobool
@@ -45,7 +46,8 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_QUERYSTRING_AUTH = False
 AWS_LOCATION = DJANGO_URL_PREFIX
 AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN')
-if AWS_STORAGE_BUCKET_NAME:
+
+if AWS_STORAGE_BUCKET_NAME and 'test' not in sys.argv:
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
