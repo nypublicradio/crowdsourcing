@@ -11,7 +11,10 @@ class Survey(models.Model):
 
     # branding
     brand_logo = models.ImageField('Brand Logo', upload_to='media/surveys/logos', blank=True)
-    brand_link = models.URLField('Brand Link', blank=True)
+    brand_link = models.URLField('Brand Link', blank=True, help_text="""
+        The logo and text will link out to this url,
+        e.g. https://www.wnycstudios.org/shows/deathsexmoney.
+    """)
     brand_link_label = models.CharField('Link Text', max_length=200, blank=True)
 
     def __str__(self):
