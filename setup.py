@@ -36,6 +36,7 @@ setup(
         'raven',
         'requests',
         'uwsgi',
+        'Pillow',
     ],
     tests_require=[
         'pytest>=3.0.6',
