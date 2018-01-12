@@ -35,7 +35,7 @@ class SurveySerializer(serializers.ModelSerializer):
             'url': obj.brand_logo.url,
             'height': obj.brand_logo.height,
             'width': obj.brand_logo.width,
-        }
+        } if obj.brand_logo else {}
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
