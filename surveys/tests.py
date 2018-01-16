@@ -60,7 +60,7 @@ class SubmissionTests(APITestCase):
     @patch('surveys.validators.requests.head')
     def test_validations(self, mock_head):
         url = reverse('submission-list')
-        survey = mixer.blend(Survey,)
+        survey = mixer.blend(Survey)
         email_question = mixer.blend(Question, input_type=Question.EMAIL,
                                      label='email', survey=survey)
         audio_question = mixer.blend(Question, input_type=Question.AUDIO,
@@ -78,7 +78,6 @@ class SubmissionTests(APITestCase):
             'survey': survey.pk
         }
         mock_head.return_value = Mock(status_code=404)
-        response = self.client.post(url, data, format='json')
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/json')
         errors = response.data
