@@ -22,7 +22,7 @@ class SurveySerializer(serializers.ModelSerializer):
             'title',
             'summary',
             'thank_you',
-            'starts_at',
+            'expired',
             'questions',
             'brand_logo',
             'brand_link',
