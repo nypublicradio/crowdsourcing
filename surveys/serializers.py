@@ -17,7 +17,7 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         resource_name = 'survey'
-        fields = ('id', 'title', 'summary', 'thank_you', 'starts_at', 'questions')
+        fields = ('id', 'title', 'summary', 'thank_you', 'expired', 'questions')
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
