@@ -21,11 +21,11 @@ class Survey(models.Model):
     def __str__(self):
         return self.title
 
-    def is_published(self):
-        return self.starts_at <= timezone.now()
-    is_published.admin_order_field = 'starts_at'
-    is_published.boolean = True
-    is_published.short_description = 'Is Published?'
+    def expired(self):
+        return self.ends_at <= timezone.now() if self.ends_at else False
+    expired.admin_order_field = 'ends_at'
+    expired.boolean = True
+    expired.short_description = 'Expired?'
 
 
 class Question(models.Model):
