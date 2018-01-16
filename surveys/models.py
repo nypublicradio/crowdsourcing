@@ -7,7 +7,7 @@ class Survey(models.Model):
     title = models.CharField(max_length=200)
     summary = models.TextField(blank=True)
     thank_you = models.TextField('Thank You Message', blank=True)
-    starts_at = models.DateTimeField('Starts At', default=timezone.now)
+    ends_at = models.DateTimeField('Ends At', blank=True, null=True)
 
     def __str__(self):
         return self.title
