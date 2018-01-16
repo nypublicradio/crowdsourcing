@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('surveys', '0003_expiration_dates'),
+        ('surveys', '0004_expiration_dates'),
     ]
 
     operations = [
