@@ -10,7 +10,8 @@ class Survey(models.Model):
     starts_at = models.DateTimeField('Starts At', default=timezone.now)
 
     # branding
-    brand_logo = models.ImageField('Brand Logo', upload_to='media/surveys/logos', blank=True)
+    brand_logo = models.ImageField('Brand Logo', upload_to='media/surveys/logos', blank=True,
+                                   help_text="This image should be a square.")
     brand_link = models.URLField('Brand Link', blank=True, help_text="""
         The logo and text will link out to this url,
         e.g. https://www.wnycstudios.org/shows/deathsexmoney.
