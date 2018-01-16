@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from surveys.models import Survey, Question, Submission
-from surveys.validators import MISSING_QUESTION
+from surveys.validators import MISSING_QUESTION, EXPIRED_SURVEY
 
 
 pytestmark = pytest.mark.django_db
@@ -87,3 +87,18 @@ class SubmissionTests(APITestCase):
         mock_head.assert_called_with(bad_audio)
         self.assertEqual(audio_error, 'Audio file {} does not exist.'.format(bad_audio))
         self.assertEqual(email_error, 'Enter a valid email address.')
+
+    def test_expired_survey(self):
+        url = reverse('submission-list')
+        expired_survey = mixer.blend(Survey, expired=True)
+        questions = mixer.cycle(5).blend(Question, survey=expired_survey)
+
+        data = {
+            'answers': [{'question': q.pk, 'response': 'foo'} for q in questions],
+            'survey': expired_survey.pk
+        }
+        response = self.client.post(url, data=json.dumps(data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['survey'][0], EXPIRED_SURVEY)
