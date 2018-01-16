@@ -1,3 +1,5 @@
+{% load admin_extras %}
+
 <fieldset class="module aligned {{ fieldset.classes }}">
   {% if fieldset.name %}<h2>{{ fieldset.name }}</h2>{% endif %}
   {% if fieldset.description %}
@@ -15,6 +17,8 @@
             {{ field.label_tag }}
             {% if field.is_readonly %}
               <div class="readonly">{{ field.contents }}</div>
+            {% elif field|is_json_field %}
+              {% include "admin/surveys/submission/answers.html" %}
             {% else %}
               {{ field.field }}
             {% endif %}
