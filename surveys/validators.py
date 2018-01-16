@@ -8,6 +8,7 @@ from rest_framework.serializers import ValidationError
 from .models import Question
 
 MISSING_QUESTION = 'The specified question does not exist.'
+EXPIRED_SURVEY = 'This survey is expired.'
 
 
 def remote_file_lookup(url):

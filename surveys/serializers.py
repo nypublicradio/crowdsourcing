@@ -22,7 +22,7 @@ class SurveySerializer(serializers.ModelSerializer):
             'title',
             'summary',
             'thank_you',
-            'starts_at',
+            'expired',
             'questions',
             'brand_logo',
             'brand_link',
@@ -58,6 +58,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
         return data
 
     def validate(self, data):
+        if data['survey'].expired:
+            raise serializers.ValidationError({
+                'survey': validators.EXPIRED_SURVEY
+            })
         data = self.fill_in_answers(data)
         data = validators.AnswerValidator.answers_belong_to_survey(data)
         data = validators.AnswerValidator.validate_answer_type(data)
