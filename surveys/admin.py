@@ -38,7 +38,13 @@ class SurveyAdmin(admin.ModelAdmin):
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'view_ends_at', 'expired')
+    list_display = ('title', 'view_ends_at', 'view_expired')
+
+    def view_expired(self, obj):
+        return obj.expired
+    view_expired.admin_order_field = 'ends_at'
+    view_expired.boolean = True
+    view_expired.short_description = 'Expired?'
 
     def view_ends_at(self, obj):
         return obj.ends_at
