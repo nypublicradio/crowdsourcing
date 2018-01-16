@@ -8,6 +8,9 @@ class Survey(models.Model):
     summary = models.TextField(blank=True)
     thank_you = models.TextField('Thank You Message', blank=True)
     ends_at = models.DateTimeField('Ends At', blank=True, null=True)
+    expired_message = models.TextField('Expiration Message', blank=True, help_text="""
+    Message to display to users after this survey has expired.
+    """)
 
     def __str__(self):
         return self.title
