@@ -1,4 +1,6 @@
 import json
+from datetime import timedelta
+from django.utils import timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -90,7 +92,7 @@ class SubmissionTests(APITestCase):
 
     def test_expired_survey(self):
         url = reverse('submission-list')
-        expired_survey = mixer.blend(Survey, expired=True)
+        expired_survey = mixer.blend(Survey, ends_at=timezone.now() - timedelta(1))
         questions = mixer.cycle(5).blend(Question, survey=expired_survey)
 
         data = {
