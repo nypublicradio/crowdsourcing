@@ -33,8 +33,7 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['title']}),
-        ('Date Information', {'fields': ['ends_at'], 'classes': ['collapse']}),
+        (None, {'fields': [('title', 'ends_at')]}),
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
