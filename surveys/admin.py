@@ -44,6 +44,7 @@ class SurveyAdmin(admin.ModelAdmin):
 class SubmissionAdmin(admin.ModelAdmin):
     list_filter = ['survey', HasAudioFilter]
     list_display = ('__str__', 'submitted_at', 'audio_files', 'survey_link')
+    readonly_fields = ('submitted_at',)
 
     def audio_files(self, obj):
         # `format_html_join` requires string values to be wrapped in an iterable
