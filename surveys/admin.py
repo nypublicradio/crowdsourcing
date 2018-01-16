@@ -34,11 +34,16 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['title']}),
-        ('Date Information', {'fields': ['starts_at'], 'classes': ['collapse']}),
+        ('Date Information', {'fields': ['ends_at'], 'classes': ['collapse']}),
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'starts_at', 'is_published')
+    list_display = ('title', 'view_ends_at', 'expired')
+
+    def view_ends_at(self, obj):
+        return obj.ends_at
+    view_ends_at.short_description = 'Ends At'
+    view_ends_at.empty_value_display = 'Does not expire'
 
 
 class SubmissionAdmin(admin.ModelAdmin):
