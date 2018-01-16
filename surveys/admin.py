@@ -38,7 +38,12 @@ class SurveyAdmin(admin.ModelAdmin):
         ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'starts_at', 'is_published')
+    list_display = ('title', 'starts_at', 'is_published', 'view_submissions')
+
+    def view_submissions(self, obj):
+        return format_html('<a href="{}?survey__id__exact={}">View Submissions</a>',
+                           reverse('admin:surveys_submission_changelist'), obj.id)
+    view_submissions.short_description = ''
 
 
 class SubmissionAdmin(admin.ModelAdmin):
