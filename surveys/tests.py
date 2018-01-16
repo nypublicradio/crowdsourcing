@@ -1,4 +1,6 @@
 import json
+from datetime import timedelta
+from django.utils import timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -58,7 +60,7 @@ class SubmissionTests(APITestCase):
     @patch('surveys.validators.requests.head')
     def test_validations(self, mock_head):
         url = reverse('submission-list')
-        survey = mixer.blend(Survey,)
+        survey = mixer.blend(Survey)
         email_question = mixer.blend(Question, input_type=Question.EMAIL,
                                      label='email', survey=survey)
         audio_question = mixer.blend(Question, input_type=Question.AUDIO,
@@ -76,7 +78,6 @@ class SubmissionTests(APITestCase):
             'survey': survey.pk
         }
         mock_head.return_value = Mock(status_code=404)
-        response = self.client.post(url, data, format='json')
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/json')
         errors = response.data
@@ -90,7 +91,7 @@ class SubmissionTests(APITestCase):
 
     def test_expired_survey(self):
         url = reverse('submission-list')
-        expired_survey = mixer.blend(Survey, expired=True)
+        expired_survey = mixer.blend(Survey, ends_at=timezone.now() - timedelta(1))
         questions = mixer.cycle(5).blend(Question, survey=expired_survey)
 
         data = {

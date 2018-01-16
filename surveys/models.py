@@ -21,11 +21,9 @@ class Survey(models.Model):
     def __str__(self):
         return self.title
 
+    @property
     def expired(self):
         return self.ends_at <= timezone.now() if self.ends_at else False
-    expired.admin_order_field = 'ends_at'
-    expired.boolean = True
-    expired.short_description = 'Expired?'
 
 
 class Question(models.Model):
