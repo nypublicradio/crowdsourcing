@@ -46,7 +46,6 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=200)),
                 ('summary', models.TextField(blank=True)),
                 ('thank_you', models.TextField(blank=True, verbose_name='Thank You Message')),
-                ('starts_at', models.DateTimeField(verbose_name='Starts At')),
             ],
         ),
         migrations.AddField(
