@@ -34,10 +34,9 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['title']}),
-        ('Date Information', {'fields': ['starts_at'], 'classes': ['collapse']}),
-        ('Content', {'fields': ['summary', 'thank_you'], 'classes': ['collapse']}),
-        ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')],
-                      'classes': ['collapse']}),
+        ('Date Information', {'fields': ['starts_at']}),
+        ('Content', {'fields': ['summary', 'thank_you']}),
+        ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
     ]
     inlines = [QuestionInline]
     list_display = ('title', 'starts_at', 'is_published')
