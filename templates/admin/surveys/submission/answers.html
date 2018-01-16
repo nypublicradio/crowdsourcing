@@ -5,6 +5,11 @@
     {% for answer in field.field.value|load_json %}
     <li>
       <strong>{{answer.label}}:</strong> {{answer.response}}
+      {% if answer.input_type == 'a' %}
+      <div>
+        <audio src="{{answer.response}}" controls />
+      </div>
+      {% endif %}
     </li>
     {% endfor %}
   </ul>
