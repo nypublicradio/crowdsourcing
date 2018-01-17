@@ -33,7 +33,7 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': [('title', 'ends_at')]}),
+        (None, {'fields': [('title', 'ends_at'), 'expired_message']}),
         ('Content', {'fields': ['summary', 'thank_you']}),
         ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
     ]
