@@ -103,3 +103,15 @@ class SubmissionTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['survey'][0], EXPIRED_SURVEY)
+
+
+class SurveyTests(APITestCase):
+
+    def test_fields(self):
+        survey = mixer.blend(Survey)
+        url = reverse('survey-detail', args=[survey.pk])
+        response = self.client.get(url, content_type='application/json')
+
+        self.assertEqual(sorted(response.data.keys()),
+                         sorted(['id', 'title', 'summary', 'thank_you', 'expired_message',
+                                'expired', 'questions']))
