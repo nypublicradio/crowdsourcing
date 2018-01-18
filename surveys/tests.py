@@ -114,4 +114,5 @@ class SurveyTests(APITestCase):
 
         self.assertEqual(sorted(response.data.keys()),
                          sorted(['id', 'title', 'summary', 'thank_you', 'expired_message',
-                                'expired', 'questions']))
+                                 'expired', 'questions', 'brand_logo', 'brand_link',
+                                 'brand_link_label']))
