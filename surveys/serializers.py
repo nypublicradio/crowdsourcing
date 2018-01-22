@@ -17,7 +17,25 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         resource_name = 'survey'
-        fields = ('id', 'title', 'summary', 'thank_you', 'starts_at', 'questions')
+        fields = (
+            'id',
+            'title',
+            'summary',
+            'thank_you',
+            'starts_at',
+            'questions',
+            'brand_logo',
+            'brand_link',
+            'brand_link_label',)
+
+    brand_logo = serializers.SerializerMethodField()
+
+    def get_brand_logo(self, obj):
+        return {
+            'url': obj.brand_logo.url,
+            'height': obj.brand_logo.height,
+            'width': obj.brand_logo.width,
+        } if obj.brand_logo else {}
 
 
 class SubmissionSerializer(serializers.ModelSerializer):

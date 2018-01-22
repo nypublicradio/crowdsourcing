@@ -9,8 +9,13 @@ services:
     depends_on:
       - db
     environment:
-      DJANGO_DEBUG: "true"
-      DJANGO_SECRET_KEY: dev
+      - AWS_STORAGE_BUCKET_NAME
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+      - DJANGO_DEBUG=true
+      - DJANGO_SECRET_KEY=dev
+      - DJANGO_URL_PREFIX
     image: nypr-crowdsourcing
     links:
       - db

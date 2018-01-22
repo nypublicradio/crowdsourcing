@@ -9,6 +9,15 @@ class Survey(models.Model):
     thank_you = models.TextField('Thank You Message', blank=True)
     starts_at = models.DateTimeField('Starts At', default=timezone.now)
 
+    # branding
+    brand_logo = models.ImageField('Brand Logo', upload_to='media/surveys/logos', blank=True,
+                                   help_text="This image should be a square.")
+    brand_link = models.URLField('Brand Link', blank=True, help_text="""
+        The logo and text will link out to this url,
+        e.g. https://www.wnycstudios.org/shows/deathsexmoney.
+    """)
+    brand_link_label = models.CharField('Link Text', max_length=200, blank=True)
+
     def __str__(self):
         return self.title
 
