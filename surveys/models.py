@@ -7,7 +7,10 @@ class Survey(models.Model):
     title = models.CharField(max_length=200)
     summary = models.TextField(blank=True)
     thank_you = models.TextField('Thank You Message', blank=True)
-    starts_at = models.DateTimeField('Starts At', default=timezone.now)
+    ends_at = models.DateTimeField('Ends At', blank=True, null=True)
+    expired_message = models.TextField('Expiration Message', blank=True, help_text="""
+        Message to display to users after this survey has expired.
+    """)
 
     # branding
     brand_logo = models.ImageField('Brand Logo', upload_to='media/surveys/logos', blank=True,
@@ -21,11 +24,9 @@ class Survey(models.Model):
     def __str__(self):
         return self.title
 
-    def is_published(self):
-        return self.starts_at <= timezone.now()
-    is_published.admin_order_field = 'starts_at'
-    is_published.boolean = True
-    is_published.short_description = 'Is Published?'
+    @property
+    def expired(self):
+        return self.ends_at <= timezone.now() if self.ends_at else False
 
 
 class Question(models.Model):

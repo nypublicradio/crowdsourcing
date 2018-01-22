@@ -33,13 +33,23 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['title']}),
-        ('Date Information', {'fields': ['starts_at']}),
+        (None, {'fields': [('title', 'ends_at'), 'expired_message']}),
         ('Content', {'fields': ['summary', 'thank_you']}),
         ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'starts_at', 'is_published', 'view_submissions')
+    list_display = ('title', 'view_ends_at', 'view_expired', 'view_submissions')
+
+    def view_ends_at(self, obj):
+        return obj.ends_at
+    view_ends_at.short_description = 'Ends At'
+    view_ends_at.empty_value_display = 'Does not expire'
+
+    def view_expired(self, obj):
+        return obj.expired
+    view_expired.admin_order_field = 'ends_at'
+    view_expired.boolean = True
+    view_expired.short_description = 'Expired?'
 
     def view_submissions(self, obj):
         return format_html('<a href="{}?survey__id__exact={}">View Submissions</a>',

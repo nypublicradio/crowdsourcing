@@ -1,4 +1,6 @@
 import json
+from datetime import timedelta
+from django.utils import timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -10,7 +12,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from surveys.models import Survey, Question, Submission
-from surveys.validators import MISSING_QUESTION
+from surveys.validators import MISSING_QUESTION, EXPIRED_SURVEY
 
 
 pytestmark = pytest.mark.django_db
@@ -58,7 +60,7 @@ class SubmissionTests(APITestCase):
     @patch('surveys.validators.requests.head')
     def test_validations(self, mock_head):
         url = reverse('submission-list')
-        survey = mixer.blend(Survey,)
+        survey = mixer.blend(Survey)
         email_question = mixer.blend(Question, input_type=Question.EMAIL,
                                      label='email', survey=survey)
         audio_question = mixer.blend(Question, input_type=Question.AUDIO,
@@ -76,7 +78,6 @@ class SubmissionTests(APITestCase):
             'survey': survey.pk
         }
         mock_head.return_value = Mock(status_code=404)
-        response = self.client.post(url, data, format='json')
         response = self.client.post(url, data=json.dumps(data),
                                     content_type='application/json')
         errors = response.data
@@ -87,3 +88,31 @@ class SubmissionTests(APITestCase):
         mock_head.assert_called_with(bad_audio)
         self.assertEqual(audio_error, 'Audio file {} does not exist.'.format(bad_audio))
         self.assertEqual(email_error, 'Enter a valid email address.')
+
+    def test_expired_survey(self):
+        url = reverse('submission-list')
+        expired_survey = mixer.blend(Survey, ends_at=timezone.now() - timedelta(1))
+        questions = mixer.cycle(5).blend(Question, survey=expired_survey)
+
+        data = {
+            'answers': [{'question': q.pk, 'response': 'foo'} for q in questions],
+            'survey': expired_survey.pk
+        }
+        response = self.client.post(url, data=json.dumps(data),
+                                    content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['survey'][0], EXPIRED_SURVEY)
+
+
+class SurveyTests(APITestCase):
+
+    def test_fields(self):
+        survey = mixer.blend(Survey)
+        url = reverse('survey-detail', args=[survey.pk])
+        response = self.client.get(url, content_type='application/json')
+
+        self.assertEqual(sorted(response.data.keys()),
+                         sorted(['id', 'title', 'summary', 'thank_you', 'expired_message',
+                                 'expired', 'questions', 'brand_logo', 'brand_link',
+                                 'brand_link_label']))

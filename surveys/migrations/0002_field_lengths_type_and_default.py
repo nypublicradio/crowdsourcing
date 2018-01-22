@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.utils.timezone
 
 
 class Migration(migrations.Migration):
@@ -22,10 +21,5 @@ class Migration(migrations.Migration):
             model_name='question',
             name='short_name',
             field=models.SlugField(max_length=100),
-        ),
-        migrations.AlterField(
-            model_name='survey',
-            name='starts_at',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Starts At'),
         ),
     ]
