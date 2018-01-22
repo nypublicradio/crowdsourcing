@@ -158,3 +158,7 @@ RAVEN_CONFIG = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Avoid conflicting with other django instances running on this domain
+CSRF_COOKIE_PATH = '/{}'.format(os.environ.get('DJANGO_URL_PREFIX'))
+SESSION_COOKIE_PATH = '/{}'.format(os.environ.get('DJANGO_URL_PREFIX'))
