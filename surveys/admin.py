@@ -40,10 +40,10 @@ class SurveyAdmin(admin.ModelAdmin):
     inlines = [QuestionInline]
     list_display = ('title', 'view_ends_at', 'view_expired', 'view_submissions')
 
-    def view_submissions(self, obj):
-        return format_html('<a href="{}?survey__id__exact={}">View Submissions</a>',
-                           reverse('admin:surveys_submission_changelist'), obj.id)
-    view_submissions.short_description = ''
+    def view_ends_at(self, obj):
+        return obj.ends_at
+    view_ends_at.short_description = 'Ends At'
+    view_ends_at.empty_value_display = 'Does not expire'
 
     def view_expired(self, obj):
         return obj.expired
@@ -51,10 +51,10 @@ class SurveyAdmin(admin.ModelAdmin):
     view_expired.boolean = True
     view_expired.short_description = 'Expired?'
 
-    def view_ends_at(self, obj):
-        return obj.ends_at
-    view_ends_at.short_description = 'Ends At'
-    view_ends_at.empty_value_display = 'Does not expire'
+    def view_submissions(self, obj):
+        return format_html('<a href="{}?survey__id__exact={}">View Submissions</a>',
+                           reverse('admin:surveys_submission_changelist'), obj.id)
+    view_submissions.short_description = ''
 
 
 class SubmissionAdmin(admin.ModelAdmin):
