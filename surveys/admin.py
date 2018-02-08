@@ -38,7 +38,12 @@ class SurveyAdmin(admin.ModelAdmin):
         ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'view_ends_at', 'view_expired', 'view_submissions')
+    list_display = ('view_id', 'title', 'view_ends_at', 'view_expired', 'view_submissions')
+
+    def view_id(self, obj):
+        return obj.id
+    view_id.short_description = "Survey ID"
+    view_id.empty_value_display = "Null"
 
     def view_ends_at(self, obj):
         return obj.ends_at
