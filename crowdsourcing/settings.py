@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'storages',
@@ -162,3 +163,5 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Avoid conflicting with other django instances running on this domain
 CSRF_COOKIE_PATH = '{}'.format(os.environ.get('DJANGO_URL_PREFIX'))
 SESSION_COOKIE_PATH = '{}'.format(os.environ.get('DJANGO_URL_PREFIX'))
+
+CLIENT_URL_PREFIX = os.environ.get('CLIENT_URL_PREFIX', 'localhost:4200')

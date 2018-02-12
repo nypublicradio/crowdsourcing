@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
+from django.conf import settings
 
 
 class Survey(models.Model):
@@ -23,6 +24,9 @@ class Survey(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return "%s/%i" % (settings.CLIENT_URL_PREFIX, self.id)
 
     @property
     def expired(self):
@@ -70,3 +74,19 @@ class Submission(models.Model):
     @property
     def audio_answers(self):
         return [x for x in filter(lambda x: x['input_type'] == 'a', self.answers)]
+
+    @property
+    def labels(self):
+        return [x['label'] for x in self.answers]
+
+    @property
+    def responses(self):
+        return [x.get('response', '') for x in self.answers]
+
+    @property
+    def surveyid(self):
+        return self.survey.id
+
+    @property
+    def surveytitle(self):
+        return self.survey.title

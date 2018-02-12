@@ -16,6 +16,7 @@ services:
       - DJANGO_DEBUG=true
       - DJANGO_SECRET_KEY=dev
       - DJANGO_URL_PREFIX
+      - CLIENT_URL_PREFIX
     image: nypr-crowdsourcing
     links:
       - db
@@ -27,7 +28,7 @@ services:
       - ./crowdsourcing:/code/crowdsourcing
       - ./scripts:/code/scripts
       - ./surveys:/code/surveys
-      - ./templates:/code/templates 
+      - ./templates:/code/templates
       - ./manage.py:/code/manage.py
       - ./setup.py:/code/setup.py
       - ./pytest.ini:/code/pytest.ini
