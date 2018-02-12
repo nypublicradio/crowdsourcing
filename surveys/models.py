@@ -70,3 +70,19 @@ class Submission(models.Model):
     @property
     def audio_answers(self):
         return [x for x in filter(lambda x: x['input_type'] == 'a', self.answers)]
+
+    @property
+    def labels(self):
+        return [x['label'] for x in self.answers]
+
+    @property
+    def responses(self):
+        return [x.get('response', '') for x in self.answers]
+
+    @property
+    def surveyid(self):
+        return self.survey.id
+
+    @property
+    def surveytitle(self):
+        return self.survey.title
