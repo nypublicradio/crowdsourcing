@@ -39,6 +39,7 @@ class SurveyAdmin(admin.ModelAdmin):
     ]
     inlines = [QuestionInline]
     list_display = ('title', 'view_ends_at', 'view_expired', 'view_submissions')
+    view_on_site = True
 
     def view_ends_at(self, obj):
         return obj.ends_at
