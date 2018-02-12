@@ -4,12 +4,16 @@ from django.utils import timezone
 from unittest.mock import Mock, patch
 
 import pytest
+import csv
+import io
 from django.urls import reverse
 
 from mixer.backend.django import mixer
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
+from django.test.client import Client
 
 from surveys.models import Survey, Question, Submission
 from surveys.validators import MISSING_QUESTION, EXPIRED_SURVEY
@@ -116,3 +120,92 @@ class SurveyTests(APITestCase):
                          sorted(['id', 'title', 'summary', 'thank_you', 'expired_message',
                                  'expired', 'questions', 'brand_logo', 'brand_link',
                                  'brand_link_label']))
+
+
+class AdminTests(APITestCase):
+
+    def test_csv_action(self):
+        self.client = Client()
+        user = User.objects.create_superuser(
+            username='test',
+            password='test',
+            email='test'
+        )
+        self.client.force_login(user)
+        url = reverse('admin:surveys_submission_changelist')
+        survey = mixer.blend(Survey)
+        questions = mixer.cycle(5).blend(Question, survey=survey)
+        answers = [{'question': q.pk, 'label': q.label,
+                    'input_type': q.input_type, 'response': 'foo'} for q in questions]
+        submissions = mixer.cycle(3).blend(Submission, survey=survey, answers=answers)
+
+        data = {'action': 'download_csv', '_selected_action': [s.pk for s in submissions]}
+        response = self.client.post(url, data)
+
+        reader = csv.reader(io.StringIO(response.content.decode('utf-8')))
+        header = next(reader)
+        self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions[0].labels, header)
+        i = 0
+        s = submissions[::-1]
+        # reverse submissions as they will be ordered by date created
+        for row in reader:
+            srow = ["%i" % s[i].surveyid, s[i].surveytitle,
+                    s[i].submitted_at.isoformat(' ')] + s[i].responses
+            self.assertEqual(row, srow)
+            i += 1
+
+        # should be three rows of responses
+        self.assertEqual(i, 3)
+
+    def test_global_csv_action(self):
+        self.client = Client()
+        user = User.objects.create_superuser(
+            username='test',
+            password='test',
+            email='test'
+        )
+        self.client.force_login(user)
+        url = reverse('admin:surveys_submission_changelist')
+        survey1 = mixer.blend(Survey)
+        questions1 = mixer.cycle(5).blend(Question, survey=survey1)
+        answers1 = [{'question': q.pk, 'label': q.label,
+                    'input_type': q.input_type, 'response': 'foo'} for q in questions1]
+        submissions1 = mixer.cycle(3).blend(Submission, survey=survey1, answers=answers1)
+
+        survey2 = mixer.blend(Survey)
+        questions2 = mixer.cycle(5).blend(Question, survey=survey2)
+        answers2 = [{'question': q.pk, 'label': q.label,
+                    'input_type': q.input_type, 'response': 'foo'} for q in questions2]
+        submissions2 = mixer.cycle(3).blend(Submission, survey=survey2, answers=answers2)
+        submissions = submissions1 + submissions2
+        data = {'action': 'global_csv_download', '_selected_action': [s.pk for s in submissions]}
+        response = self.client.post(url, data)
+        reader = csv.reader(io.StringIO(response.content.decode('utf-8')))
+        header = next(reader)
+
+        s1 = submissions1[::-1]
+        # reverse submissions as they will be ordered by date created
+        self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions1[0].labels, header)
+        i = 0
+        for row in reader:
+            if i is 3:
+                self.assertEqual([], row)
+                # empty row seperating different surveys
+                break
+            srow = ["%i" % s1[i].surveyid, s1[i].surveytitle,
+                    s1[i].submitted_at.isoformat(' ')] + s1[i].responses
+            self.assertEqual(row, srow)
+            i += 1
+
+        header = next(reader)
+        s2 = submissions2[::-1]
+        # reverse submissions as they will be ordered by date created
+        self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions2[0].labels, header)
+        i = 0
+        for row in reader:
+            if i is 3:
+                break
+            srow = ["%i" % s2[i].surveyid, s2[i].surveytitle,
+                    s2[i].submitted_at.isoformat(' ')] + s2[i].responses
+            self.assertEqual(row, srow)
+            i += 1
