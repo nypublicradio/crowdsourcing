@@ -42,8 +42,8 @@ class SurveyAdmin(admin.ModelAdmin):
 
     def view_id(self, obj):
         return obj.id
-    view_id.short_description = "Survey ID"
-    view_id.empty_value_display = "Null"
+    view_id.short_description = 'Survey ID'
+    view_id.empty_value_display = 'Null'
 
     def view_ends_at(self, obj):
         return obj.ends_at
