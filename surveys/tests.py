@@ -4,12 +4,16 @@ from django.utils import timezone
 from unittest.mock import Mock, patch
 
 import pytest
+import csv
+import io
 from django.urls import reverse
 
 from mixer.backend.django import mixer
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
+from django.test.client import Client
 
 from surveys.models import Survey, Question, Submission
 from surveys.validators import MISSING_QUESTION, EXPIRED_SURVEY
@@ -116,3 +120,37 @@ class SurveyTests(APITestCase):
                          sorted(['id', 'title', 'summary', 'thank_you', 'expired_message',
                                  'expired', 'questions', 'brand_logo', 'brand_link',
                                  'brand_link_label']))
+
+
+class AdminTests(APITestCase):
+
+    def test_csv_action(self):
+        self.client = Client()
+        user = User.objects.create_superuser(
+            username='test',
+            password='test',
+            email='test'
+        )
+        self.client.force_login(user)
+        url = reverse('admin:surveys_submission_changelist')
+        survey = mixer.blend(Survey)
+        questions = mixer.cycle(5).blend(Question, survey=survey)
+        answers = [{'question': q.pk, 'label': q.label,
+                    'input_type': q.input_type, 'response': 'foo'} for q in questions]
+        submissions = mixer.cycle(3).blend(Submission, survey=survey, answers=answers)
+
+        data = {'action': 'download_csv', '_selected_action': [s.pk for s in submissions]}
+        response = self.client.post(url, data)
+
+        reader = csv.reader(io.StringIO(response.content.decode('utf-8')))
+        header = next(reader)
+        self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions[0].labels, header)
+        i = 0
+        s = submissions[::-1]
+        for row in reader:
+            srow = ["%i" % s[i].surveyid, s[i].surveytitle, s[i].submitted_at.isoformat(' ')] + s[i].responses
+            self.assertEqual(row, srow)
+            i += 1
+
+        # should be three rows of responses
+        self.assertEqual(i, 3)
