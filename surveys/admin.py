@@ -38,8 +38,13 @@ class SurveyAdmin(admin.ModelAdmin):
         ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
     ]
     inlines = [QuestionInline]
-    list_display = ('title', 'view_ends_at', 'view_expired', 'view_submissions')
+    list_display = ('view_id', 'title', 'view_ends_at', 'view_expired', 'view_submissions')
     view_on_site = True
+
+    def view_id(self, obj):
+        return obj.id
+    view_id.short_description = "Survey ID"
+    view_id.empty_value_display = "Null"
 
     def view_ends_at(self, obj):
         return obj.ends_at
@@ -62,6 +67,41 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_filter = ['survey', HasAudioFilter]
     list_display = ('__str__', 'submitted_at', 'audio_files', 'survey_link')
     readonly_fields = ('submitted_at',)
+    actions = ['download_csv', 'global_csv_download']
+
+    def download_csv(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        import io
+        f = io.StringIO()
+        writer = csv.writer(f)
+        writer.writerow(["Survey Id", "Survey", "Submitted At"] + queryset[0].labels)
+        for s in queryset:
+            writer.writerow([s.surveyid, s.surveytitle, s.submitted_at] + s.responses)
+        f.seek(0)
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=stat-info.csv'
+        return response
+
+    def global_csv_download(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        import io
+        f = io.StringIO()
+        writer = csv.writer(f)
+        ordered = queryset.order_by('survey_id', '-submitted_at')
+        x = queryset[0].surveyid
+        writer.writerow(["Survey Id", "Survey", "Submitted At"] + queryset[0].labels)
+        for s in ordered:
+            if s.surveyid != x:
+                writer.writerow([])
+                writer.writerow(["Survey Id", "Survey", "Submitted At"] + s.labels)
+                x = s.surveyid
+            writer.writerow([s.surveyid, s.surveytitle, s.submitted_at] + s.responses)
+        f.seek(0)
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=stat-info.csv'
+        return response
 
     def audio_files(self, obj):
         # `format_html_join` requires string values to be wrapped in an iterable
