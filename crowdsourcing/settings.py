@@ -162,3 +162,4 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Avoid conflicting with other django instances running on this domain
 CSRF_COOKIE_PATH = '{}'.format(os.environ.get('DJANGO_URL_PREFIX') or '/')
 SESSION_COOKIE_PATH = '{}'.format(os.environ.get('DJANGO_URL_PREFIX') or '/')
+CLIENT_URL_PREFIX = os.environ.get('CLIENT_URL_PREFIX') or 'localhost:4200'
