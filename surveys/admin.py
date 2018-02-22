@@ -33,9 +33,9 @@ class QuestionInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class SurveyAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': [('title', 'ends_at'), 'expired_message']}),
-        ('Content', {'fields': ['summary', 'thank_you']}),
+        (None, {'fields': [('title', 'ends_at')]}),
         ('Branding', {'fields': ['brand_logo', ('brand_link', 'brand_link_label')]}),
+        ('Content', {'fields': ['summary', 'thank_you', 'expired_message']}),
     ]
     inlines = [QuestionInline]
     list_display = ('view_id', 'title', 'view_ends_at', 'view_expired', 'view_submissions')
