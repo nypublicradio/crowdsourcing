@@ -52,10 +52,10 @@ class SurveyAdmin(admin.ModelAdmin):
     view_ends_at.empty_value_display = 'Does not expire'
 
     def view_expired(self, obj):
-        return obj.expired
+        return 'Expired' if obj.expired else 'Live'
     view_expired.admin_order_field = 'ends_at'
-    view_expired.boolean = True
-    view_expired.short_description = 'Expired?'
+    view_ends_at.empty_value_display = 'Does not expire'
+    view_expired.short_description = 'Status'
 
     def view_submissions(self, obj):
         return format_html('<a href="{}?survey__id__exact={}">View Submissions</a>',
