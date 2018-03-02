@@ -77,63 +77,66 @@ class SubmissionAdmin(admin.ModelAdmin):
     actions = ['download_csv', 'global_csv_download']
 
     def changelist_view(self, request, extra_context=None):
-        # conditions under which the error for actions on unselected items is thrown
-        # override ModelAdmin changelist_view only for this case.
-        exp = (request.POST.get('action', False) and request.method == 'POST' and
-               'index' in request.POST and '_save' not in request.POST)
-        if (exp):
-            # override to allow for exporting of ALL records to CSV if no chkbox selected
-            selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-            if request.GET:
-                qd = request.GET.dict()
-            else:
-                qd = None
-            print(request.GET)
-            data = request.POST.copy()
-            action = False
-            try:
-                action = self.get_actions(request)[data['action']][0]
-                action_run_on_unselected = action.run_on_unselected
-            except (KeyError, AttributeError):
-                action_run_on_unselected = False
-            if action and len(selected) == 0 and action_run_on_unselected:
-                if action.is_global:
-                    data['select_across'] = '1'
-                    request.POST = data
-                    response = self.response_action(request, queryset=self.get_queryset(request))
-                    if response:
-                        return response
-                    else:
-                        return HttpResponseRedirect(request.get_full_path())
+        # override to allow for exporting of ALL records to CSV if no chkbox selected
+        # Note: changelist_view is a method that updates what instances are viewable
+        # depending on filters that are set. It's methods filter on it's root_queryset
+        # which is given by the modelAdmin method get_queryset, which gives all editable
+        # instances of a model. If an action is selected, response_action is meant to be
+        # called, and within that method is a filter based on what is checked on the
+        # admin page. This method bypasses response_action to perform actions on unchecked
+        # instances.
+        data = request.POST.copy()
+        if data.get('action', False) and data['action'] in ('download_csv', 'global_csv_download'):
+            action = self.get_actions(request)[data['action']][0]
+            if data['action'] == 'global_csv_download':
+                # if global download, download all submissions, no matter what.
+                queryset = Submission.objects.all()
+                if queryset:
+                    return action(self, request, queryset)
                 else:
+                    m = 'CSV cannot be created with zero submissions.'
+                    self.message_user(request, m, level=messages.WARNING,
+                                      extra_tags='', fail_silently=False)
+                    return HttpResponseRedirect(request.get_full_path())
+            else:
+                # if download_csv, check to see if there are checked items. If so, run action
+                # as normal by defaulting to super call at the end of the method. Otherwise,
+                # download csv of all items in the current filtered view.
+                selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)  # get checked items
+                if request.GET:  # get query string
+                    qd = request.GET.dict()
+                else:
+                    qd = None
+
+                if len(selected) == 0:
                     if qd and qd.get('survey__id__exact', False):
-                        # check for a survey filter - required by non-global actions
-                        temp = data
-                        data['select_across'] = '1'
-                        request.POST = data
-                        # select all object and use changelist to filter
+                        # check for a survey filter - required by non-global download
+                        # Next, use changelist to get filtered queryset
                         try:
                             cl = self.get_changelist_instance(request)
                         except IncorrectLookupParameters:
                             # Wacky lookup parameters were given, allow modelAdmin (super)
-                            # version of changelist_view to handle the error
-                            request.POST = temp
-                            super(SubmissionAdmin, self).changelist_view(request, extra_context)
-
-                        response = self.response_action(request, queryset=cl.get_queryset(request))
-                        if response:
-                            return response
+                            # version of changelist_view to handle the error warning to user.
+                            return super(SubmissionAdmin, self).changelist_view(request,
+                                                                                extra_context)
+                        queryset = cl.get_queryset(request)
+                        if queryset:
+                            return action(self, request, queryset)
                         else:
+                            m = 'CSV cannot be created with zero submissions.'
+                            self.message_user(request, m, level=messages.WARNING,
+                                              extra_tags='', fail_silently=False)
                             return HttpResponseRedirect(request.get_full_path())
 
                     else:
                         # if action is not global and no survey filter is set, show error
-                        message = 'Use global_csv_download to create a list of all submissions.'
-                        self.message_user(request, message, level=messages.WARNING,
+                        m = 'Use global_csv_download to create a list with all survey results.'
+                        self.message_user(request, m, level=messages.WARNING,
                                           extra_tags='', fail_silently=False)
-                        # error message
                         return HttpResponseRedirect(request.get_full_path())
-
+        # if there is no action, or the action isn't download_csv or global_csv_download,
+        # or there are items checked and the action is download_csv, call the overriden
+        # method and let the action run as normal.
         return super(SubmissionAdmin, self).changelist_view(request, extra_context)
 
     def download_csv(self, request, queryset):
@@ -146,8 +149,6 @@ class SubmissionAdmin(admin.ModelAdmin):
         response = HttpResponse(f, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=survey-responses.csv'
         return response
-    download_csv.is_global = False
-    download_csv.run_on_unselected = True
 
     def global_csv_download(self, request, queryset):
         f = io.StringIO()
@@ -166,8 +167,6 @@ class SubmissionAdmin(admin.ModelAdmin):
         response = HttpResponse(f, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=global-survey-responses.csv'
         return response
-    global_csv_download.is_global = True
-    global_csv_download.run_on_unselected = True
 
     def audio_files(self, obj):
         # `format_html_join` requires string values to be wrapped in an iterable
