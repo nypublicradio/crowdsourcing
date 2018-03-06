@@ -40,6 +40,7 @@ class SurveyAdmin(admin.ModelAdmin):
     inlines = [QuestionInline]
     list_display = ('view_id', 'title', 'view_ends_at', 'view_expired', 'view_submissions')
     view_on_site = True
+    save_as = True
 
     def view_id(self, obj):
         return obj.id
