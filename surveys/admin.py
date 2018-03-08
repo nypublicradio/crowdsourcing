@@ -1,16 +1,16 @@
-from adminsortable2.admin import SortableInlineAdminMixin
+import io
+import csv
 
+from adminsortable2.admin import SortableInlineAdminMixin
 from django.contrib import admin
 from django.utils.html import format_html_join, format_html
 from django.urls import reverse
-
-from .models import Survey, Submission, Question
 from django.contrib import messages
-import csv
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib.admin.options import IncorrectLookupParameters
-import io
+
+from .models import Survey, Submission, Question
 
 
 class HasAudioFilter(admin.SimpleListFilter):
@@ -85,84 +85,83 @@ class SubmissionAdmin(admin.ModelAdmin):
         # called, and within that method is a filter based on what is checked on the
         # admin page. This method bypasses response_action to perform actions on unchecked
         # instances.
-        data = request.POST.copy()
-        if data.get('action', False) and data['action'] in ('download_csv', 'global_csv_download'):
-            action = self.get_actions(request)[data['action']][0]
-            if data['action'] == 'global_csv_download':
-                # if global download, download all submissions, no matter what.
-                queryset = Submission.objects.all()
-                if queryset:
-                    return action(self, request, queryset)
+        action = request.POST.get('action')
+        if action == 'global_csv_download':
+            # if global download, download all submissions, no matter what.
+            queryset = Submission.objects.all()
+            if queryset:
+                return self.global_csv_download(request, queryset)
+            else:
+                m = 'CSV cannot be created with zero submissions.'
+                self.message_user(request, m, level=messages.WARNING,
+                                  extra_tags='', fail_silently=False)
+                return HttpResponseRedirect(request.get_full_path())
+        elif action == 'download_csv':
+            # if download_csv, check to see if there are checked items. If so, run action
+            # as normal by defaulting to super call at the end of the method. Otherwise,
+            # download csv of all items in the current filtered view.
+            selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)  # get checked items
+
+            qd = request.GET.dict()  # get query parameters
+            if not selected:
+                if qd and qd.get('survey__id__exact', False):
+                    # check for a survey filter - required by non-global download
+                    # Next, use changelist to get filtered queryset
+                    try:
+                        cl = self.get_changelist_instance(request)
+                    except IncorrectLookupParameters:
+                        # Wacky lookup parameters were given, allow modelAdmin (super)
+                        # version of changelist_view to handle the error warning to user.
+                        return super(SubmissionAdmin, self).changelist_view(request,
+                                                                            extra_context)
+                    queryset = cl.get_queryset(request)
+                    if queryset:
+                        return self.download_csv(request, queryset)
+                    else:
+                        m = 'CSV cannot be created with zero submissions.'
+                        self.message_user(request, m, level=messages.WARNING,
+                                          extra_tags='', fail_silently=False)
+                        return HttpResponseRedirect(request.get_full_path())
+
                 else:
-                    m = 'CSV cannot be created with zero submissions.'
+                    # the action is not global and no survey filter is set, show error
+                    m = 'Use "global csv download" to create a list with all survey results.'
                     self.message_user(request, m, level=messages.WARNING,
                                       extra_tags='', fail_silently=False)
                     return HttpResponseRedirect(request.get_full_path())
             else:
-                # if download_csv, check to see if there are checked items. If so, run action
-                # as normal by defaulting to super call at the end of the method. Otherwise,
-                # download csv of all items in the current filtered view.
-                selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)  # get checked items
-                if request.GET:  # get query string
-                    qd = request.GET.dict()
-                else:
-                    qd = None
-
-                if len(selected) == 0:
-                    if qd and qd.get('survey__id__exact', False):
-                        # check for a survey filter - required by non-global download
-                        # Next, use changelist to get filtered queryset
-                        try:
-                            cl = self.get_changelist_instance(request)
-                        except IncorrectLookupParameters:
-                            # Wacky lookup parameters were given, allow modelAdmin (super)
-                            # version of changelist_view to handle the error warning to user.
-                            return super(SubmissionAdmin, self).changelist_view(request,
-                                                                                extra_context)
-                        queryset = cl.get_queryset(request)
-                        if queryset:
-                            return action(self, request, queryset)
-                        else:
-                            m = 'CSV cannot be created with zero submissions.'
-                            self.message_user(request, m, level=messages.WARNING,
-                                              extra_tags='', fail_silently=False)
-                            return HttpResponseRedirect(request.get_full_path())
-
-                    else:
-                        # if action is not global and no survey filter is set, show error
-                        m = 'Use global_csv_download to create a list with all survey results.'
-                        self.message_user(request, m, level=messages.WARNING,
-                                          extra_tags='', fail_silently=False)
-                        return HttpResponseRedirect(request.get_full_path())
-        # if there is no action, or the action isn't download_csv or global_csv_download,
-        # or there are items checked and the action is download_csv, call the overriden
-        # method and let the action run as normal.
-        return super(SubmissionAdmin, self).changelist_view(request, extra_context)
+                # there are items checked and the action is download_csv, call the overriden
+                # method and let the action run as normal.
+                return super(SubmissionAdmin, self).changelist_view(request, extra_context)
+        else:
+            # if there is no action, or the action isn't download_csv or global_csv_download,
+            # call the overriden method and let the method run as normal.
+            return super(SubmissionAdmin, self).changelist_view(request, extra_context)
 
     def download_csv(self, request, queryset):
         f = io.StringIO()
         writer = csv.writer(f)
         writer.writerow(["Survey Id", "Survey", "Submitted At"] + queryset[0].labels)
         for s in queryset:
-            writer.writerow([s.surveyid, s.surveytitle, s.submitted_at] + s.responses)
+            writer.writerow([s.survey.id, s.survey.title, s.submitted_at] + s.responses)
         f.seek(0)
         response = HttpResponse(f, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=survey-responses.csv'
+        response['Content-Disposition'] = 'attachment; filename=%s responses.csv' % s.survey.title
         return response
 
     def global_csv_download(self, request, queryset):
         f = io.StringIO()
         writer = csv.writer(f)
-        queryset = Submission.objects.all()
         ordered = queryset.order_by('survey_id', '-submitted_at')
-        x = queryset[0].surveyid
-        writer.writerow(["Survey Id", "Survey", "Submitted At"] + queryset[0].labels)
-        for s in ordered:
-            if s.surveyid != x:
+        grouped = {(id, title): ordered.filter(survey__id=id) for
+                   id, title in Survey.objects.values_list('id', 'title')}
+
+        for (title, id), submissions in grouped.items():
+            if submissions:
+                writer.writerow(["Survey Id", "Survey", "Submitted At"] + submissions[0].labels)
+                for s in submissions:
+                        writer.writerow([s.survey.id, s.survey.title, s.submitted_at] + s.responses)
                 writer.writerow([])
-                writer.writerow(["Survey Id", "Survey", "Submitted At"] + s.labels)
-                x = s.surveyid
-            writer.writerow([s.surveyid, s.surveytitle, s.submitted_at] + s.responses)
         f.seek(0)
         response = HttpResponse(f, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=global-survey-responses.csv'

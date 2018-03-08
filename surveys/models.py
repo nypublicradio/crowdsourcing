@@ -82,11 +82,3 @@ class Submission(models.Model):
     @property
     def responses(self):
         return [x.get('response', '') for x in self.answers]
-
-    @property
-    def surveyid(self):
-        return self.survey.id
-
-    @property
-    def surveytitle(self):
-        return self.survey.title
