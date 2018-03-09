@@ -149,7 +149,7 @@ class AdminTests(APITestCase):
         s = submissions[::-1]
         # reverse submissions as they will be ordered by date created
         for row in reader:
-            srow = ["%i" % s[i].surveyid, s[i].surveytitle,
+            srow = ["%i" % s[i].survey.id, s[i].survey.title,
                     s[i].submitted_at.isoformat(' ')] + s[i].responses
             self.assertEqual(row, srow)
             i += 1
@@ -171,13 +171,13 @@ class AdminTests(APITestCase):
         answers1 = [{'question': q.pk, 'label': q.label,
                     'input_type': q.input_type, 'response': 'foo'} for q in questions1]
         submissions1 = mixer.cycle(3).blend(Submission, survey=survey1, answers=answers1)
-
         survey2 = mixer.blend(Survey)
         questions2 = mixer.cycle(5).blend(Question, survey=survey2)
         answers2 = [{'question': q.pk, 'label': q.label,
                     'input_type': q.input_type, 'response': 'foo'} for q in questions2]
         submissions2 = mixer.cycle(3).blend(Submission, survey=survey2, answers=answers2)
         submissions = submissions1 + submissions2
+
         data = {'action': 'global_csv_download', '_selected_action': [s.pk for s in submissions]}
         response = self.client.post(url, data)
         reader = csv.reader(io.StringIO(response.content.decode('utf-8')))
@@ -192,7 +192,7 @@ class AdminTests(APITestCase):
                 self.assertEqual([], row)
                 # empty row seperating different surveys
                 break
-            srow = ["%i" % s1[i].surveyid, s1[i].surveytitle,
+            srow = ["%i" % s1[i].survey.id, s1[i].survey.title,
                     s1[i].submitted_at.isoformat(' ')] + s1[i].responses
             self.assertEqual(row, srow)
             i += 1
@@ -205,7 +205,7 @@ class AdminTests(APITestCase):
         for row in reader:
             if i is 3:
                 break
-            srow = ["%i" % s2[i].surveyid, s2[i].surveytitle,
+            srow = ["%i" % s2[i].survey.id, s2[i].survey.title,
                     s2[i].submitted_at.isoformat(' ')] + s2[i].responses
             self.assertEqual(row, srow)
             i += 1
