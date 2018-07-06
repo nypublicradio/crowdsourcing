@@ -146,7 +146,7 @@ class SubmissionAdmin(admin.ModelAdmin):
             writer.writerow([s.survey.id, s.survey.title, s.submitted_at] + s.responses)
         f.seek(0)
         response = HttpResponse(f, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s responses.csv' % s.survey.title
+        response['Content-Disposition'] = 'attachment; filename="%s responses.csv"' % s.survey.title
         return response
 
     def global_csv_download(self, request, queryset):
