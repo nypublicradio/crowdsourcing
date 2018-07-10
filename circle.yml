@@ -1,3 +1,42 @@
+deploy_steps: &deploy_steps
+  working_directory: ~/crowdsourcing
+  docker:
+    - image: circleci/python:3.6
+  steps:
+    - checkout
+    - setup_remote_docker
+    - restore_cache:
+        key: d-{{ checksum "setup.py" }}
+    - run:
+        name: Deploy
+        command: |
+          TAG=${CIRCLE_TAG:-demo}
+          . ~/.venv/bin/activate
+          python setup.py deploy --environment=$ENV \
+                                 --tag=$TAG \
+                                 --ecs-cluster=microservices \
+                                 --ecr-repository=crowdsourcing \
+                                 --wait=300
+
+deploy_static_steps: &deploy_static_steps
+  working_directory: ~/crowdsourcing
+  docker:
+    - image: circleci/python:3.6
+  steps:
+    - checkout
+    - restore_cache:
+        key: d-{{ checksum "setup.py" }}
+    - run:
+        name: Deploy Static
+        command: |
+          TAG=${CIRCLE_TAG:-demo}
+          . ~/.venv/bin/activate
+          pip install -e .
+          set -o allexport
+          env | grep "^${ENV}_" | sed "s/${ENV}_//g" > .env && source .env
+          manage.py collectstatic --no-input
+          set +o allexport
+
 version: 2
 jobs:
 
@@ -31,83 +70,58 @@ jobs:
             - ~/.venv
             - ~/.eggs
             - ~/crowdsourcing/crowdsourcing.egg-info
-  deploy:
-    working_directory: ~/crowdsourcing
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      - setup_remote_docker
-      - restore_cache:
-          key: d-{{ checksum "setup.py" }}
-      - run:
-          name: Deploy
-          command: |
-            . ~/.venv/bin/activate
-            if [[ "${CIRCLE_BRANCH}" == "demo" ]]; then
-              python setup.py deploy --environment=demo \
-                                     --tag=demo \
-                                     --ecs-cluster=microservices \
-                                     --ecr-repository=crowdsourcing \
-                                     --wait=300
-            elif echo "$CIRCLE_TAG" | grep -q "v[0-9]\+\.[0-9]\+\.[0-9]\+"; then
-              python setup.py deploy --environment=prod \
-                                     --tag="$CIRCLE_TAG" \
-                                     --ecs-cluster=microservices \
-                                     --ecr-repository=crowdsourcing \
-                                     --wait=300
-             fi
 
-  deploy_static:
-    working_directory: ~/crowdsourcing
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      - restore_cache:
-          key: d-{{ checksum "setup.py" }}
-      - run:
-          name: Deploy Static
-          command: |
-            . ~/.venv/bin/activate
-            pip install -e .
-            set -o allexport
-            if [[ "${CIRCLE_BRANCH}" == "demo" ]]; then
-              env | grep ^DEMO_ | sed 's/DEMO_//g' > .env && source .env
-              manage.py collectstatic --no-input
-            elif echo "$CIRCLE_TAG" | grep -qP "v\d+\.\d+\.\d+"; then
-              env | grep ^PROD_ | sed 's/PROD_//g' > .env && source .env
-              manage.py collectstatic --no-input
-            fi
-            set +o allexport
+  deploy_prod:
+    <<: *deploy_steps
+    environment:
+      ENV: prod
+
+  deploy_demo:
+    <<: *deploy_steps
+    environment:
+      ENV: demo
+
+  deploy_static_prod:
+    <<: *deploy_static_steps
+    environment:
+      ENV: prod
+
+  deploy_static_demo:
+    <<: *deploy_static_steps
+    environment:
+      ENV: demo
 
 workflows:
   version: 2
-  build-test-deploy:
+  just-test:
     jobs:
       - test:
           filters:
             tags:
               only: /.*/
-      - deploy:
+  deploy-demo:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: master
+      - deploy_demo:
           requires:
             - test
-          filters:
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+/
-            branches:
-              only: demo
-      - deploy_static:
+      - deploy_static_demo:
           requires:
             - test
+  deploy-prod:
+    jobs:
+      - test:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+/
-            branches:
-              only: demo
-
-experimental:
-  notify:
-    branches:
-      only:
-        - master
+      - deploy_prod:
+          requires:
+            - test
+      - deploy_static_prod:
+          requires:
+            - test
