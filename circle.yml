@@ -29,7 +29,6 @@ deploy_static_steps: &deploy_static_steps
     - run:
         name: Deploy Static
         command: |
-          TAG=${CIRCLE_TAG:-demo}
           . ~/.venv/bin/activate
           pip install -e .
           set -o allexport
@@ -84,12 +83,12 @@ jobs:
   deploy_static_prod:
     <<: *deploy_static_steps
     environment:
-      ENV: prod
+      ENV: PROD
 
   deploy_static_demo:
     <<: *deploy_static_steps
     environment:
-      ENV: demo
+      ENV: DEMO
 
 workflows:
   version: 2
@@ -98,7 +97,9 @@ workflows:
       - test:
           filters:
             tags:
-              only: /.*/
+              ignore: /.*/
+            branches:
+              ignore: master
   deploy-demo:
     jobs:
       - test:
