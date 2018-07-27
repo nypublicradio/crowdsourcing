@@ -6,17 +6,25 @@ deploy_steps: &deploy_steps
     - checkout
     - setup_remote_docker
     - restore_cache:
-        key: d-{{ checksum "setup.py" }}
+        key: v2-{{ checksum "setup.py" }}
     - run:
         name: Deploy
         command: |
           TAG=${CIRCLE_TAG:-demo}
           . ~/.venv/bin/activate
-          python setup.py deploy --environment=$ENV \
-                                 --tag=$TAG \
-                                 --ecs-cluster=microservices \
-                                 --ecr-repository=crowdsourcing \
-                                 --wait=300
+          python setup.py deploy \
+            --cpu=256 \
+            --ecr-repository=crowdsourcing \
+            --ecs-cluster=microservices \
+            --environment=$ENV \
+            --execution-role="ecsTaskExecutionRole" \
+            --fargate \
+            --memory-reservation=512 \
+            --migrate='./manage.py migrate --noinput' \
+            --ports=8080 \
+            --tag=$TAG \
+            --task-role=crowdsourcing-$ENV \
+            --wait=300
 
 deploy_static_steps: &deploy_static_steps
   working_directory: ~/crowdsourcing
@@ -25,7 +33,7 @@ deploy_static_steps: &deploy_static_steps
   steps:
     - checkout
     - restore_cache:
-        key: d-{{ checksum "setup.py" }}
+        key: v2-{{ checksum "setup.py" }}
     - run:
         name: Deploy Static
         command: |
@@ -48,7 +56,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: d-{{ checksum "setup.py" }}
+          key: v2-{{ checksum "setup.py" }}
       - run:
           name: Install Requirements
           command: |
@@ -64,10 +72,10 @@ jobs:
             . ~/.venv/bin/activate
             python setup.py test
       - save_cache:
-          key: d-{{ checksum "setup.py" }}
+          key: v2-{{ checksum "setup.py" }}
           paths:
             - ~/.venv
-            - ~/.eggs
+            - ~/crowdsourcing/.eggs
             - ~/crowdsourcing/crowdsourcing.egg-info
 
   deploy_prod:
