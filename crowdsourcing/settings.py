@@ -44,7 +44,7 @@ STATIC_URL = posixpath.join(DJANGO_URL_PREFIX or '/', 'static/')
 # Static files can be stored via S3 in demo/production.
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_QUERYSTRING_AUTH = False
-AWS_LOCATION = DJANGO_URL_PREFIX
+AWS_LOCATION = DJANGO_URL_PREFIX.lstrip('/')  # No leading slashes in S3.
 AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN')
 
 if AWS_STORAGE_BUCKET_NAME and 'test' not in sys.argv:
