@@ -2,16 +2,12 @@
 
 [ -n "$DJANGO_SECRET_KEY" ] || { echo "Need to set env var DJANGO_SECRET_KEY" > /dev/stderr && exit 1; }
 
-uwsgi --http :8080 \
-      --ignore-write-errors \
-      --ignore-sigpipe \
-      --manage-script-name \
-      --logger "healthcheck file:/dev/null" \
-      --log-route "healthcheck ELB-HealthChecker/\d.\d" \
-      --log-x-forwarded-for \
-      --logformat '%(addr) - %(user) [%(ltime)] "%(method) %(uri) %(proto)" %(status) %(size) "%(referrer)" "%(uagent)"' \
-      --env DJANGO_SETTINGS_MODULE=crowdsourcing.settings \
-      --env DJANGO_DEBUG=False \
-      --env DJANGO_URL_PREFIX=/crowdsourcing \
-      --mount /crowdsourcing=crowdsourcing.wsgi:application \
-      --enable-threads
+ini=/code/uwsgi.ini
+export SERVICE=crowdsourcing
+
+uwsgi \
+    --ini "${ini}" \
+    --env DJANGO_SETTINGS_MODULE=crowdsourcing.settings \
+    --env DJANGO_DEBUG=False \
+    --env DJANGO_URL_PREFIX=/crowdsourcing \
+    --mount /crowdsourcing=crowdsourcing.wsgi:application

@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
+ini=/code/uwsgi.ini
+export SERVICE=crowdsourcing
+export DJANGO_SETTINGS_MODULE=crowdsourcing.settings
+export DJANGO_DEBUG=True
 
-manage.py migrate
+wait-for-it.sh -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -t 30
 
-uwsgi --honour-stdin \
-      --py-auto-reload 3 \
-      --http :8000 \
-      --log-x-forwarded-for \
-      --logformat '%(addr) - %(user) [%(ltime)] "%(method) %(uri) %(proto)" %(status) %(size) "%(referrer)" "%(uagent)"' \
-      --manage-script-name \
-      --env DJANGO_SETTINGS_MODULE=crowdsourcing.settings \
-      --env DJANGO_DEBUG=True \
-      --mount /=crowdsourcing.wsgi:application
+python manage.py migrate
+python setup.py test_requirements
+python manage.py runserver 0.0.0.0:8080

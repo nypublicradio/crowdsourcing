@@ -1,10 +1,8 @@
-FROM python:3.6
-
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir /code
+COPY . /code/
 WORKDIR /code
-COPY . ./
-RUN pip install -e .
 
+RUN pip install --no-cache-dir -e .
 CMD run_prod

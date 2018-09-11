@@ -52,6 +52,7 @@ setup(
     scripts=[
         "scripts/run_dev",
         "scripts/run_prod",
+        "scripts/wait-for-it.sh",
         "manage.py"
     ],
     setup_requires=[

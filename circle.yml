@@ -1,3 +1,4 @@
+---
 deploy_steps: &deploy_steps
   working_directory: ~/crowdsourcing
   docker:
@@ -70,6 +71,7 @@ jobs:
           name: Test
           command: |
             . ~/.venv/bin/activate
+            wait-for-it.sh -h db -p 5432 -t 30
             python setup.py test
       - save_cache:
           key: v2-{{ checksum "setup.py" }}

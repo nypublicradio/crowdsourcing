@@ -5,7 +5,7 @@ services:
     image: postgres
   django:
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8080
+    command: ["./scripts/run_dev"]
     depends_on:
       - db
     environment:
