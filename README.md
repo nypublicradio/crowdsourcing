@@ -2,6 +2,13 @@
 
 ## Development
 
+### Prerequisites
+
+You will need the following software properly installed on your computer. Please follow all the directions as written on the websites of these projects and do not neglect to install their dependencies.
+
+* [Git](http://git-scm.com/downloads)
+* [Docker](https://docs.docker.com/)
+
 ### Getting started
 
 Clone the repo.
