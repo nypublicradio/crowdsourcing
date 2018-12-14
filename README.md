@@ -17,6 +17,12 @@ $ git clone git@github.com:nypublicradio/crowdsourcing
 $ cd crowdsourcing
 ```
 
+Create an .env file for environment variables
+```sh
+$ cp .env.sample .env
+```
+
+
 Build the image.
 ```sh
 $ docker-compose build
