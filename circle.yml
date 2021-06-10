@@ -2,7 +2,7 @@
 deploy_steps: &deploy_steps
   working_directory: ~/crowdsourcing
   docker:
-    - image: circleci/python:3.6
+    - image: circleci/python:3.7
   steps:
     - checkout
     - setup_remote_docker
@@ -30,7 +30,7 @@ deploy_steps: &deploy_steps
 deploy_static_steps: &deploy_static_steps
   working_directory: ~/crowdsourcing
   docker:
-    - image: circleci/python:3.6
+    - image: circleci/python:3.7
   steps:
     - checkout
     - restore_cache:
@@ -51,7 +51,7 @@ jobs:
   test:
     working_directory: ~/crowdsourcing
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.7
       - image: postgres
         name: db
     steps:
