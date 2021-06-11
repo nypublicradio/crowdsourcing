@@ -188,7 +188,7 @@ class AdminTests(APITestCase):
         self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions1[0].labels, header)
         i = 0
         for row in reader:
-            if i is 3:
+            if i == 3:
                 self.assertEqual([], row)
                 # empty row seperating different surveys
                 break
@@ -203,7 +203,7 @@ class AdminTests(APITestCase):
         self.assertEqual(["Survey Id", "Survey", "Submitted At"] + submissions2[0].labels, header)
         i = 0
         for row in reader:
-            if i is 3:
+            if i == 3:
                 break
             srow = ["%i" % s2[i].survey.id, s2[i].survey.title,
                     s2[i].submitted_at.isoformat(' ')] + s2[i].responses

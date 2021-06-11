@@ -2,7 +2,7 @@
 deploy_steps: &deploy_steps
   working_directory: ~/crowdsourcing
   docker:
-    - image: circleci/python:3.6
+    - image: circleci/python:3.7
   steps:
     - checkout
     - setup_remote_docker
@@ -30,7 +30,7 @@ deploy_steps: &deploy_steps
 deploy_static_steps: &deploy_static_steps
   working_directory: ~/crowdsourcing
   docker:
-    - image: circleci/python:3.6
+    - image: circleci/python:3.7
   steps:
     - checkout
     - restore_cache:
@@ -39,6 +39,7 @@ deploy_static_steps: &deploy_static_steps
         name: Deploy Static
         command: |
           . ~/.venv/bin/activate
+          pip install wheel
           pip install -e .
           set -o allexport
           env | grep "^${ENV}_" | sed "s/${ENV}_//g" > .env && source .env
@@ -51,8 +52,10 @@ jobs:
   test:
     working_directory: ~/crowdsourcing
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.7
       - image: postgres
+        environment:
+          POSTGRES_HOST_AUTH_METHOD: trust
         name: db
     steps:
       - checkout
@@ -64,6 +67,7 @@ jobs:
             if [[ ! -d ~/.venv ]]; then
               python -m venv ~/.venv
               . ~/.venv/bin/activate
+              pip install wheel
               pip install -e .
               python setup.py test_requirements
             fi

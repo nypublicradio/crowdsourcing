@@ -25,7 +25,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'boto3',
-        'Django>=2.0,<2.1',
+        'Django==2.2.9',
         'django-admin-sortable2',
         'django-cors-headers',
         'django-extensions',
@@ -56,10 +56,7 @@ setup(
         "manage.py"
     ],
     setup_requires=[
-        'nyprsetuptools>=0.0.0'
-    ],
-    dependency_links=[
-        'https://github.com/nypublicradio/nyprsetuptools/tarball/master#egg=nyprsetuptools-0.0.0'
+        'nyprsetuptools@https://github.com/nypublicradio/nyprsetuptools/tarball/master'
     ],
     entry_points={
         'distutils.commands': [

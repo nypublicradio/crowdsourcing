@@ -160,7 +160,7 @@ class SubmissionAdmin(admin.ModelAdmin):
             if submissions:
                 writer.writerow(["Survey Id", "Survey", "Submitted At"] + submissions[0].labels)
                 for s in submissions:
-                        writer.writerow([s.survey.id, s.survey.title, s.submitted_at] + s.responses)
+                    writer.writerow([s.survey.id, s.survey.title, s.submitted_at] + s.responses)
                 writer.writerow([])
         f.seek(0)
         response = HttpResponse(f, content_type='text/csv')
