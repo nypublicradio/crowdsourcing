@@ -76,6 +76,7 @@ jobs:
           command: |
             . ~/.venv/bin/activate
             wait-for-it.sh -h db -p 5432 -t 30
+            flake8 -v .
             python setup.py test
       - save_cache:
           key: v2-{{ checksum "setup.py" }}
