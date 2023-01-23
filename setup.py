@@ -31,7 +31,7 @@ setup(
         'django-extensions==3.1.3',
         'django-filter==2.4.0',
         'django-storages==1.11.1',
-        'djangorestframework>=3.7.0',
+        'djangorestframework==3.12.4',
         'psycopg2',
         'raven',
         'requests',
