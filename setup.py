@@ -32,7 +32,7 @@ setup(
         'django-filter==2.4.0',
         'django-storages==1.11.1',
         'djangorestframework==3.12.4',
-        'psycopg2',
+        'psycopg2==2.8.6',
         'raven',
         'requests',
         'uwsgi==2.0.19.1',
