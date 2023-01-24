@@ -76,6 +76,7 @@ jobs:
           command: |
             . ~/.venv/bin/activate
             wait-for-it.sh -h db -p 5432 -t 30
+            flake8 -v .
             python setup.py test
       - save_cache:
           key: v2-{{ checksum "setup.py" }}
@@ -123,9 +124,11 @@ workflows:
       - deploy_demo:
           requires:
             - test
+          context: "AWS Deploy"
       - deploy_static_demo:
           requires:
             - test
+          context: "AWS Deploy"
   deploy-prod:
     jobs:
       - test:
@@ -137,12 +140,14 @@ workflows:
       - deploy_prod:
           requires:
             - test
+          context: "AWS Deploy"
           filters:
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+/
       - deploy_static_prod:
           requires:
             - test
+          context: "AWS Deploy"
           filters:
             tags:
               only: /^v[0-9]+\.[0-9]+\.[0-9]+/
