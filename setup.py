@@ -35,7 +35,7 @@ setup(
         'psycopg2==2.8.6',
         'raven',
         'requests',
-        'uwsgi==2.0.19.1',
+        'uwsgi==2.0.22',
         'Pillow==8.2.0',
     ],
     tests_require=[
