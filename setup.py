@@ -36,7 +36,7 @@ setup(
         'raven',
         'requests',
         'uwsgi==2.0.19.1',
-        'Pillow==8.2.0',
+        'Pillow==10.0.1',
     ],
     tests_require=[
         'flake8<4',
