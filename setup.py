@@ -24,7 +24,7 @@ setup(
     license='BSD',
     include_package_data=True,
     install_requires=[
-        'boto3',
+        'boto3==1.26.55',
         'Django==2.2.24',
         'django-admin-sortable2==1.0',
         'django-cors-headers==3.7.0',
@@ -35,6 +35,7 @@ setup(
         'psycopg2==2.8.6',
         'raven',
         'requests',
+        'urllib3==1.26.14',
         'uwsgi==2.0.19.1',
         'Pillow==8.2.0',
     ],
