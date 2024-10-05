@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  nypr-deploy: nypr/nypr-deploy@0.0.82
+  nypr-deploy: nypr/nypr-deploy@0.0.83
 
 filter_all: &filter_all
   filters:
@@ -60,6 +60,7 @@ workflows:
           repo: "crowdsourcing"
           service: "crowdsourcing"
           cluster: "microservices"
+          cluster_suffix: "-cluster"
           cpu: 256
           memory: 512
           requires:
@@ -76,6 +77,7 @@ workflows:
           repo: "crowdsourcing"
           service: "crowdsourcing"
           cluster: "microservices"
+          cluster_suffix: "-cluster"
           cpu: 256
           memory: 512
           requires:
