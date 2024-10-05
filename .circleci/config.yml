@@ -59,7 +59,7 @@ workflows:
           context: "AWS Deploy"
           repo: "crowdsourcing"
           service: "crowdsourcing"
-          cluster: "crowdsourcing"
+          cluster: "microservices"
           cpu: 256
           memory: 512
           requires:
@@ -75,7 +75,7 @@ workflows:
           context: "AWS Deploy"
           repo: "crowdsourcing"
           service: "crowdsourcing"
-          cluster: "crowdsourcing"
+          cluster: "microservices"
           cpu: 256
           memory: 512
           requires:
