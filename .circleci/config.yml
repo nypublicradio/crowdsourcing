@@ -57,6 +57,7 @@ workflows:
           <<: *filter_demo
           name: "Deploy Demo"
           context: "AWS Deploy"
+          env: "demo"
           repo: "crowdsourcing"
           service: "crowdsourcing"
           cluster: "microservices"
@@ -73,6 +74,7 @@ workflows:
       - nypr-deploy/build_and_deploy:
           <<: *filter_prod
           name: "Deploy Prod"
+          env: "prod"
           context: "AWS Deploy"
           repo: "crowdsourcing"
           service: "crowdsourcing"
