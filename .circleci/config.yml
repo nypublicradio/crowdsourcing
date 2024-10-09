@@ -1,0 +1,130 @@
+version: 2.1
+
+orbs:
+  nypr-deploy: nypr/nypr-deploy@0.0.83
+
+filter_all: &filter_all
+  filters:
+    branches:
+      only: /.*/
+    tags:
+      only: /.*/
+
+filter_demo: &filter_demo
+  filters:
+    branches:
+      only: master
+    tags:
+      only: demo
+
+filter_prod: &filter_prod
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^v[0-9]+\.[0-9]+\.[0-9]+/
+
+deploy_static_steps: &deploy_static_steps
+  working_directory: ~/crowdsourcing
+  docker:
+    - image: circleci/python:3.7
+  steps:
+    - checkout
+    - restore_cache:
+        key: v2-{{ checksum "setup.py" }}
+    - run:
+        name: Deploy Static
+        command: |
+          . ~/.venv/bin/activate
+          pip install wheel
+          pip install -e .
+          set -o allexport
+          env | grep "^${ENV}_" | sed "s/${ENV}_//g" > .env && source .env
+          manage.py collectstatic --no-input
+          set +o allexport
+
+workflows:
+  test_and_deploy:
+    jobs:
+      - test:
+          <<: *filter_all
+      - deploy_static_demo:
+          <<: *filter_demo
+          context: "AWS Deploy"
+          requires:
+            - test
+      - nypr-deploy/build_and_deploy:
+          <<: *filter_demo
+          name: "Deploy Demo"
+          context: "AWS Deploy"
+          repo: "crowdsourcing"
+          service: "crowdsourcing"
+          cluster: "microservices"
+          cluster_suffix: "-cluster"
+          cpu: 256
+          memory: 512
+          requires:
+            - test
+      - deploy_static_prod:
+          <<: *filter_prod
+          context: "AWS Deploy"
+          requires:
+            - test
+      - nypr-deploy/build_and_deploy:
+          <<: *filter_prod
+          name: "Deploy Prod"
+          context: "AWS Deploy"
+          repo: "crowdsourcing"
+          service: "crowdsourcing"
+          cluster: "microservices"
+          cluster_suffix: "-cluster"
+          cpu: 256
+          memory: 512
+          requires:
+            - test
+jobs:
+  test:
+    working_directory: ~/crowdsourcing
+    docker:
+      - image: circleci/python:3.7
+      - image: postgres
+        environment:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        name: db
+    steps:
+      - checkout
+      - restore_cache:
+          key: v2-{{ checksum "setup.py" }}
+      - run:
+          name: Install Requirements
+          command: |
+            if [[ ! -d ~/.venv ]]; then
+              python -m venv ~/.venv
+              . ~/.venv/bin/activate
+              pip install wheel
+              pip install -e .
+              python setup.py test_requirements
+            fi
+      - run:
+          name: Test
+          command: |
+            . ~/.venv/bin/activate
+            wait-for-it.sh -h db -p 5432 -t 30
+            flake8 -v .
+            python setup.py test
+      - save_cache:
+          key: v2-{{ checksum "setup.py" }}
+          paths:
+            - ~/.venv
+            - ~/crowdsourcing/.eggs
+            - ~/crowdsourcing/crowdsourcing.egg-info
+
+  deploy_static_demo:
+    <<: *deploy_static_steps
+    environment:
+      ENV: DEMO
+
+  deploy_static_prod:
+    <<: *deploy_static_steps
+    environment:
+      ENV: PROD
