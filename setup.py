@@ -37,7 +37,7 @@ setup(
         'requests',
         'urllib3==1.26.14',
         'uwsgi==2.0.19.1',
-        'Pillow==8.2.0',
+        'Pillow==10.0.1',
     ],
     tests_require=[
         'flake8<4',
